@@ -1,7 +1,22 @@
 package ru.practicum.shareit.request;
 
-/**
- * TODO Sprint add-item-requests.
- */
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import ru.practicum.shareit.user.User;
+
+import java.time.LocalDateTime;
+
+@Data
+@FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 public class ItemRequest {
+    @NonNull
+    long id;
+
+    String description;
+
+    Long requestorId;
+
+    LocalDateTime created;
 }
