@@ -2,15 +2,22 @@ package ru.practicum.shareit.item.dao;
 
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
 
 public interface ItemDao {
-    List<Item> getAll();
+    List<ItemDto> getAll();
 
-    List<Item> getByUserId(long itemId);
+    List<ItemDto> getByUserId(long itemId);
 
-    Item save(Item item);
+    ItemDto save(Item item);
 
     void deleteByUserIdAndItemId(long userId, long itemId);
+
+    ItemDto updateItem(long userId, long itemId);
+
+    ItemDto getItem(long itemId);
+
+    List<ItemDto> searchByText(String text);
 }

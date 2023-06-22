@@ -24,4 +24,9 @@ public class UserServiceImpl implements UserService{
 
         return userDao.create(new User(userId, userDto.getName(), userDto.getEmail()));
     }
+
+    @Override
+    public void deleteById(long userId) {
+        userDao.deleteById(userId);
+    }
 }

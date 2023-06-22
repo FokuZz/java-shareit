@@ -8,4 +8,6 @@ import java.util.List;
 public interface UserService {
     List<UserDto> getList();
     UserDto create(UserDto userDto, long userId);
+
+    void deleteById(long userId);
 }

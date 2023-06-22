@@ -1,4 +1,4 @@
-CREATE TABLE user (
+CREATE TABLE users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(128),
     name VARCHAR(64)
