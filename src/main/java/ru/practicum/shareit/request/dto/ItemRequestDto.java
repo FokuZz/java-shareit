@@ -16,7 +16,7 @@ public class ItemRequestDto {
 
     LocalDateTime created;
 
-    public ItemRequestDto(String description, long requestorId, LocalDateTime created){
+    public ItemRequestDto(String description, long requestorId, LocalDateTime created) {
         this.description = description;
         this.requestorId = requestorId;
         this.created = created;

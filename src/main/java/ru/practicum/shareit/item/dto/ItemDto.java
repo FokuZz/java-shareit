@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotBlank;

@@ -24,12 +24,12 @@ public class Item {
 
     Long requestId;
 
-    public Item(long id, String name, String description, boolean available,Long ownerId, Long requestId) {
+    public Item(long id, String name, String description, boolean available, Long ownerId, Long requestId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.available = available;
         this.ownerId = ownerId;
-        this.requestId =requestId;
+        this.requestId = requestId;
     }
 }

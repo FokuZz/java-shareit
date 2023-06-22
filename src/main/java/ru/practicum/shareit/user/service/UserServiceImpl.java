@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
 
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService{
         return userDao.updateUser(userId, userDto);
     }
 
-    private void repeatCheck(UserDto userDto){
+    private void repeatCheck(UserDto userDto) {
         List<UserDto> userDtos = userDao.getAll();
         userDtos.forEach(user -> {
             if (user.getName().equals(userDto.getName()) || user.getEmail().equals(userDto.getEmail())) {
@@ -59,11 +59,11 @@ public class UserServiceImpl implements UserService{
         });
     }
 
-    private void repeatCheckWithId(UserDto userDto, long userId){
+    private void repeatCheckWithId(UserDto userDto, long userId) {
         List<UserDto> userDtos = userDao.getAll();
         userDtos.forEach(user -> {
             if (user.getName().equals(userDto.getName()) || user.getEmail().equals(userDto.getEmail())
-                    && user.getId() != userId ) {
+                    && user.getId() != userId) {
                 throw new AlreadyExist(String.format("Пользователь %s уже существует", userDto));
             }
         });

@@ -21,7 +21,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") long userId,
-                    @RequestBody ItemDto itemDto) {
+                              @RequestBody ItemDto itemDto) {
         return itemService.create(userId, itemDto);
     }
 
@@ -34,20 +34,20 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") long userId,
                               @PathVariable long itemId,
-                              @RequestBody ItemDto itemDto){
-        return itemService.updateItem(userId,itemId, itemDto);
+                              @RequestBody ItemDto itemDto) {
+        return itemService.updateItem(userId, itemId, itemDto);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@PathVariable long itemId){
+    public ItemDto getItem(@PathVariable long itemId) {
         return itemService.getItem(itemId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestHeader("X-Sharer-User-Id") long userId,
-                                     @RequestParam String text){
-        if(text.isEmpty()){
-           return Collections.emptyList();
+                                     @RequestParam String text) {
+        if (text.isEmpty()) {
+            return Collections.emptyList();
         }
         return itemService.searchByText(text, userId);
     }

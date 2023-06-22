@@ -28,6 +28,7 @@ public class ErrorHandler {
     public ErrorResponse handleAlreadyExist(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {

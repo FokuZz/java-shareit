@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 

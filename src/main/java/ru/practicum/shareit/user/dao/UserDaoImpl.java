@@ -24,7 +24,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public List<UserDto> getAll() {
         String sql = "SELECT * FROM users";
-       return jdbcTemplate.query(sql, (rs, rowNum) ->  toUserMapper(rsToUser(rs)));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> toUserMapper(rsToUser(rs)));
     }
 
     @Override
@@ -49,36 +49,40 @@ public class UserDaoImpl implements UserDao {
     @Override
     public UserDto updateUser(long userId, UserDto userDto) {
         String sql = "SELECT * FROM USERS WHERE ID = ?";
-        User user = jdbcTemplate.queryForObject(sql,(rs, rowNum) -> rsToUser(rs),userId);
+        User user = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> rsToUser(rs), userId);
 
         boolean isHasNewName = userDto.getName() != null;
         boolean isHasNewEmail = userDto.getEmail() != null;
 
-        if(isHasNewName){user.setName(userDto.getName());}
-        if(isHasNewEmail){user.setEmail(userDto.getEmail());}
+        if (isHasNewName) {
+            user.setName(userDto.getName());
+        }
+        if (isHasNewEmail) {
+            user.setEmail(userDto.getEmail());
+        }
 
         sql = "UPDATE USERS SET NAME = ?, EMAIL = ? WHERE ID = ? ";
-        if(jdbcTemplate.update(sql, user.getName(), user.getEmail(), userId) != 1){
-            log.error("Обновления по параметрам userId = {} не произошло",userId);
+        if (jdbcTemplate.update(sql, user.getName(), user.getEmail(), userId) != 1) {
+            log.error("Обновления по параметрам userId = {} не произошло", userId);
             throw new RuntimeException();
         }
-        log.warn("Произошло обновление по параметрам userId = {}",userId);
+        log.warn("Произошло обновление по параметрам userId = {}", userId);
         return toUserMapper(user);
     }
 
     @Override
     public UserDto create(UserDto userDto) {
         String sql = "INSERT INTO users (name, email) VALUES(?,?)";
-        if (jdbcTemplate.update(sql,userDto.getName(),userDto.getEmail()) != 1){
-            log.error("Не получилось создать юзера UserDto = {}",userDto);
+        if (jdbcTemplate.update(sql, userDto.getName(), userDto.getEmail()) != 1) {
+            log.error("Не получилось создать юзера UserDto = {}", userDto);
             throw new RuntimeException();
         }
         log.warn("Создание пользователя UserDto = {}", userDto);
         return getByName(userDto.getName());
     }
 
-    private UserDto getByName(String name){
+    private UserDto getByName(String name) {
         String sql = "SELECT * FROM users WHERE NAME = ?";
-        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->  toUserMapper(rsToUser(rs)),name);
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> toUserMapper(rsToUser(rs)), name);
     }
 }
