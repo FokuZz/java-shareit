@@ -10,10 +10,10 @@ import java.sql.SQLException;
 public class ItemMapper {
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
+                item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.isAvailable(),
-                item.getRequestId()
+                item.isAvailable()
         );
     }
     public static Item rsToItem(ResultSet rs) throws SQLException {
@@ -21,8 +21,8 @@ public class ItemMapper {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getBoolean("available"),
-                rs.getLong("ownerId"),
-                rs.getLong("requestId")
+                rs.getLong("owner_id"),
+                rs.getLong("request_id")
         );
     }
 }

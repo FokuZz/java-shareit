@@ -16,6 +16,7 @@ CREATE TABLE items (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255),
     description VARCHAR(255),
+    available boolean,
     owner_id BIGINT,
     request_id BIGINT,
     FOREIGN KEY (owner_id) REFERENCES users(id),

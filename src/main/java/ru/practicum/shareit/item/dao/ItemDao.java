@@ -11,13 +11,13 @@ public interface ItemDao {
 
     List<ItemDto> getByUserId(long itemId);
 
-    ItemDto save(Item item);
+    ItemDto save(ItemDto itemDto, long userId);
 
     void deleteByUserIdAndItemId(long userId, long itemId);
 
-    ItemDto updateItem(long userId, long itemId);
+    ItemDto updateItem(long userId, long itemId, ItemDto itemDto);
 
     ItemDto getItem(long itemId);
 
-    List<ItemDto> searchByText(String text);
+    List<ItemDto> searchByText(String text, long userId);
 }

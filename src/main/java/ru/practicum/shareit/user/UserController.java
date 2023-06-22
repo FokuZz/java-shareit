@@ -5,27 +5,38 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping
-    public List<UserDto> get(){
+    public List<UserDto> get() {
         return userService.getList();
     }
 
-    @PostMapping
-    public UserDto post(@RequestHeader("X-Later-User-Id") long userId,
-                     @RequestBody UserDto userDto){
-        return userService.create(userDto, userId);
+    @GetMapping("/{userId}")
+    public UserDto getById(@PathVariable long userId) {
+        return userService.getUserById(userId);
     }
 
-    @DeleteMapping
-    public void delete(@RequestHeader("X-Later-User-Id") long userId){
+    @PatchMapping("/{userId}")
+    public UserDto patch(@PathVariable long userId,
+                         @RequestBody UserDto userDto) {
+        return userService.updateUser(userId, userDto);
+    }
+
+    @PostMapping
+    public UserDto post(@Valid @RequestBody UserDto userDto) {
+        return userService.create(userDto);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable long userId) {
         userService.deleteById(userId);
     }
 }

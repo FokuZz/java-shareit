@@ -11,8 +11,9 @@ public interface UserDao {
 
     UserDto getById(Long userId);
 
-    UserDto create(User user);
+    UserDto create(UserDto userDto);
 
     void deleteById(Long userId);
 
+    UserDto updateUser(long userId, UserDto userDto);
 }

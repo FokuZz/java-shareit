@@ -10,6 +10,7 @@ import java.sql.SQLException;
 public class UserMapper {
     public static UserDto toUserMapper(User user) {
         return new UserDto(
+                user.getId(),
                 user.getName(),
                 user.getEmail()
         );
