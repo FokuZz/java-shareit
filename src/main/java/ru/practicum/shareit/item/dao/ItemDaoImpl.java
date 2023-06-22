@@ -103,9 +103,9 @@ public class ItemDaoImpl implements ItemDao {
     @Override
     public List<ItemDto> searchByText(String text, long userId) {
         text = "'%" + text.toLowerCase().replace("_", "\\_").replace("%", "\\%") + "%'";
-        String sql = "SELECT * FROM ITEMS WHERE OWNER_ID = ? AND LOWER(NAME) LIKE " + text +
-                " OR LOWER(DESCRIPTION) LIKE " + text;
-        List<ItemDto> itemDtos = jdbcTemplate.query(sql, (rs, rowNum) -> toItemDto(rsToItem(rs)), userId);
+        String sql = "SELECT * FROM ITEMS WHERE AVAILABLE = TRUE AND (LOWER(NAME) LIKE " + text +
+                " OR LOWER(DESCRIPTION) LIKE " + text + ")";
+        List<ItemDto> itemDtos = jdbcTemplate.query(sql, (rs, rowNum) -> toItemDto(rsToItem(rs)));
         log.info("Число найденных предметов: {}", itemDtos.size());
         return itemDtos;
     }
