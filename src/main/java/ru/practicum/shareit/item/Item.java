@@ -5,31 +5,51 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CollectionId;
+import org.hibernate.annotations.Fetch;
+import ru.practicum.shareit.user.User;
+
+import javax.persistence.*;
 
 @Data
 @Builder
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@Entity
+@Table(name = "items")
 public class Item {
-    @NonNull
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @NonNull
+    @Column(nullable = false)
     String name;
 
+    @Column(nullable = false)
     String description;
 
+    @Column(nullable = false)
     boolean available;
 
-    Long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    User owner;
 
-    Long requestId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    User requester;
 
-    public Item(long id, String name, String description, boolean available, Long ownerId, Long requestId) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.ownerId = ownerId;
-        this.requestId = requestId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return id != null && id.equals(((Item) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

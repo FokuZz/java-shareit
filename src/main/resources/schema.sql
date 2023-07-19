@@ -10,7 +10,7 @@ CREATE TABLE item_requests
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     description  VARCHAR(255),
     requestor_id BIGINT,
-    created      DATETIME,
+    created      TIMESTAMP WITHOUT TIME ZONE,
     FOREIGN KEY (requestor_id) REFERENCES users (id)
 );
 
@@ -29,10 +29,21 @@ CREATE TABLE items
 CREATE TABLE bookings
 (
     id        BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `start`   DATETIME,
-    `end`     DATETIME,
+    `start`   TIMESTAMP WITHOUT TIME ZONE,
+    `end`     TIMESTAMP WITHOUT TIME ZONE,
     item_id   BIGINT,
     booker_id BIGINT,
     FOREIGN KEY (item_id) REFERENCES items (id),
     FOREIGN KEY (booker_id) REFERENCES users (id)
+);
+
+CREATE TABLE comments
+(
+    id        BIGINT PRIMARY KEY AUTO_INCREMENT,
+    text   VARCHAR(255),
+    item_id   BIGINT,
+    author_id BIGINT,
+    created   TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (item_id) REFERENCES items (id),
+    FOREIGN KEY (author_id) REFERENCES users (id)
 );

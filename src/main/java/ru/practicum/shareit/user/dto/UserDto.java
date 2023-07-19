@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.dto;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
@@ -10,30 +11,12 @@ import java.util.Objects;
 
 @Data
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@Builder
 public class UserDto {
-    long id;
+    Long id;
 
     String name;
 
     @Email
     String email;
-
-    public UserDto(long id, @NotBlank String name, @Email String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserDto userDto = (UserDto) o;
-        return name.equals(userDto.name) && email.equals(userDto.email);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, email);
-    }
 }

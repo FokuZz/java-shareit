@@ -1,21 +1,31 @@
 package ru.practicum.shareit.item.dao;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.user.User;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface ItemDao {
-    List<ItemDto> getAll();
+public interface ItemDao extends JpaRepository<Item, Long> {
 
-    List<ItemDto> getByUserId(long itemId);
+    List<Item> findByItemId(Long userId);
 
-    ItemDto save(ItemDto itemDto, long userId);
+    void deleteByItemIdAndUserId(Long userId, Long itemId);
 
-    void deleteByUserIdAndItemId(long userId, long itemId);
+    @Query("SELECT i " +
+            "FROM Item i " +
+            "join fetch i.owner as o " +
+            "WHERE i.id = ?1 " +
+            "and o.id = ?2")
+    Optional<Item> getWithUserIdAndItemId(Long userId, Long itemId);
 
-    ItemDto updateItem(long userId, long itemId, ItemDto itemDto);
-
-    ItemDto getItem(long itemId);
-
-    List<ItemDto> searchByText(String text, long userId);
+    @Query("SELECT i " +
+            "FROM Item i " +
+            "WHERE i.id = ?2" +
+            "AND (LOWER(i.name) LIKE '%?1%' " +
+            "OR LOWER(i.description) LIKE '%?1%')")
+    List<Item> getListILikeByText(String text, Long itemId);
 }
