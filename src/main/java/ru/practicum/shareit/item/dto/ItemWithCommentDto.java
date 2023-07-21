@@ -4,10 +4,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.item.Comment;
+import ru.practicum.shareit.booking.dto.BookingDtoItem;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,11 +22,13 @@ public class ItemWithCommentDto {
 
     Boolean available;
 
-    BookingDto lastBooking;
+    final List<CommentDto> comments = new ArrayList<>();
+    BookingDtoItem lastBooking;
+    BookingDtoItem nextBooking;
 
-    BookingDto nextBooking;
-
-    List<CommentDto> comments;
+    public void addComment(CommentDto comment) {
+        comments.add(comment);
+    }
 
     @Override
     public boolean equals(Object o) {

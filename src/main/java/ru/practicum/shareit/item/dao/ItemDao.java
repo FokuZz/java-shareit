@@ -2,30 +2,30 @@ package ru.practicum.shareit.item.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.User;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ItemDao extends JpaRepository<Item, Long> {
-
-    List<Item> findByItemId(Long userId);
-
-    void deleteByItemIdAndUserId(Long userId, Long itemId);
+public interface ItemDao extends JpaRepository<Item, Long>, CrudRepository<Item, Long> {
 
     @Query("SELECT i " +
             "FROM Item i " +
-            "join fetch i.owner as o " +
-            "WHERE i.id = ?1 " +
-            "and o.id = ?2")
-    Optional<Item> getWithUserIdAndItemId(Long userId, Long itemId);
+            "JOIN FETCH i.owner o " +
+            "WHERE i.id = ?1")
+    Optional<Item> findByIdFetch(Long itemId);
+
+    List<Item> findItemsByOwnerId(Long userId);
+
+    void deleteByIdAndOwnerId(Long itemId, Long userId);
+
+    Optional<Item> findByIdAndOwnerId(Long itemId, Long userId);
 
     @Query("SELECT i " +
             "FROM Item i " +
-            "WHERE i.id = ?2" +
-            "AND (LOWER(i.name) LIKE '%?1%' " +
-            "OR LOWER(i.description) LIKE '%?1%')")
-    List<Item> getListILikeByText(String text, Long itemId);
+            "WHERE i.available = true " +
+            "AND (LOWER(i.name) LIKE CONCAT('%', ?1, '%') " +
+            "OR LOWER(i.description) LIKE CONCAT('%', ?1, '%'))")
+    List<Item> getListILikeByText(String text);
 }

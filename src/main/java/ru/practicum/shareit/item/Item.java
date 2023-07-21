@@ -1,21 +1,17 @@
 package ru.practicum.shareit.item;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CollectionId;
-import org.hibernate.annotations.Fetch;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 
 @Data
-@Builder
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "items")
+@NoArgsConstructor
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +28,14 @@ public class Item {
     boolean available;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @ToString.Exclude
+    @JoinColumn(name = "owner_id")
     User owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    User requester;
+    @ToString.Exclude
+    @JoinColumn(name = "requester_id")
+    ItemRequest requester;
 
 
     @Override

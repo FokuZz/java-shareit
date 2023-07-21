@@ -1,8 +1,8 @@
 package ru.practicum.shareit.user;
 
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
@@ -10,8 +10,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 @Data
-@Builder
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class User {
     @Column(nullable = false)
     String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     String email;
 
 

@@ -2,23 +2,19 @@ package ru.practicum.shareit.user.dto;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.dto.UserDto;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
     public static User mapToUser(UserDto userDto) {
-        return User.builder()
-                .id(userDto.getId())
-                .name(userDto.getName())
-                .email(userDto.getEmail())
-                .build();
+        User user = new User();
+        user.setId(userDto.getId());
+        user.setName(userDto.getName());
+        user.setEmail(userDto.getEmail());
+        return user;
     }
 
     public static UserDto mapToUserDto(User user) {

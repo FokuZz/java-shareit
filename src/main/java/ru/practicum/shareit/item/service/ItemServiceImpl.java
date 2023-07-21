@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dao.BookingDao;
+import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
@@ -15,8 +17,9 @@ import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserDao;
 
+import javax.validation.ValidationException;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -32,105 +35,170 @@ public class ItemServiceImpl implements ItemService {
     private final BookingDao bookingDao;
 
     @Override
-    public List<ItemDto> getItemsByUserId(long userId) {
-        log.info("Попытка получения списка предметов по userId");
-        List<Item> items =itemDao.findByItemId(userId);
-        return ItemMapper.mapToItemDto(items);
+    public List<ItemWithCommentDto> getItemsByUserId(long userId) {
+        log.info("Попытка получения списка предметов по userId = {}", userId);
+        List<Item> items = itemDao.findItemsByOwnerId(userId);
+        if (items.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Map<Long, ItemWithCommentDto> itemsWithIds = new HashMap<>();
+        items.forEach(item -> itemsWithIds.put(item.getId(), ItemMapper.mapToItemWitchCommentDto(item)));
+        addBookingDatesToItems(itemsWithIds);
+        addBookingDatesToItems(itemsWithIds);
+        return new ArrayList<>(itemsWithIds.values());
     }
 
     @Override
+    @Transactional
     public ItemDto create(long userId, ItemDto itemDto) {
-        log.info("Попытка создания с id {} itemDto {}",userId,itemDto);
-        Item item = itemDao.save(ItemMapper.mapToItem(itemDto, userDao.findById(userId)
-                .orElseThrow( () -> new NotFoundException("User не найден по id = " + userId))));
+        log.info("Попытка создания с id {} itemDto {}", userId, itemDto);
+        boolean isNullAvailable = itemDto.getAvailable() == null;
+        boolean isNullName = itemDto.getName() == null || itemDto.getName().isBlank();
+        boolean isNullDescription = itemDto.getDescription() == null;
 
+        if (isNullAvailable) throw new ValidationException("ERROR: Available is null");
+        if (isNullName) throw new ValidationException("ERROR: Name is null");
+        if (isNullDescription) throw new ValidationException("ERROR: Description is null");
+
+        Item item = itemDao.save(ItemMapper.mapToItem(itemDto,
+                userDao.findById(userId).orElseThrow(() -> new NotFoundException("User не найден по id = " + userId))));
+        log.info("Получилось Item = " + item);
         return ItemMapper.mapToItemDto(item);
     }
 
     @Override
+    @Transactional
     public void deleteByUserIdAndItemId(long userId, long itemId) {
-        log.info("Попытка удаления по userId {} и itemId {}",userId,itemId);
-        itemDao.deleteByItemIdAndUserId(userId,itemId);
+        log.info("Попытка удаления по userId {} и itemId {}", userId, itemId);
+        itemDao.deleteByIdAndOwnerId(userId, itemId);
     }
 
     @Override
+    @Transactional
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
-        log.info("Попытка обновления с userId {} itemId {} ItemDto {}",userId,itemId,itemDto);
-        Item item = itemDao.getWithUserIdAndItemId(userId, itemId)
+        log.info("Попытка обновления с userId {} itemId {} ItemDto {}", userId, itemId, itemDto);
+        Item item = itemDao.findByIdAndOwnerId(itemId, userId)
                 .orElseThrow(() -> new NotFoundException("Item не был найден"));
         boolean isHasName = itemDto.getName() != null;
         boolean isHasDescription = itemDto.getDescription() != null;
         boolean isHasAvailable = itemDto.getAvailable() != null;
 
-        if(isHasAvailable) item.setAvailable(itemDto.getAvailable());
-        if(isHasName) item.setName(itemDto.getName());
-        if(isHasDescription) item.setDescription(itemDto.getDescription());
+        if (isHasAvailable) item.setAvailable(itemDto.getAvailable());
+        if (isHasName) item.setName(itemDto.getName());
+        if (isHasDescription) item.setDescription(itemDto.getDescription());
+        item = itemDao.save(item);
         log.info("Теперь item {}", item);
-        return ItemMapper.mapToItemDto(itemDao.save(item));
+        return ItemMapper.mapToItemDto(item);
     }
 
     @Override
-    public ItemWithCommentDto getItem(long itemId) {
+    public ItemWithCommentDto getItem(long userId, long itemId) {
         log.info("Попытка получения предмета по itemId {}", itemId);
-        Item item = itemDao.findById(itemId)
+        Item item = itemDao.findByIdFetch(itemId)
                 .orElseThrow(() -> new NotFoundException("Item не найден по id = " + itemId));
-        List<Booking> bookings = bookingDao.findByItemId(itemId);
-        final LocalDateTime now = LocalDateTime.now();
-        List<Comment> comments = commentDao.findByItem(item);
-        LocalDateTime next = LocalDateTime.now();
-        LocalDateTime last = LocalDateTime.now();
-        Booking nextB = Booking.builder().build();
-        Booking lastB = Booking.builder().build();
+        ItemWithCommentDto itemWithCommentDto = ItemMapper.mapToItemWitchCommentDto(item);
 
-        for (Booking booking: bookings){
-            //Долго ломал голову и не хотел использовать запросы к sql с сортировкой по дате, сделал всё циклом
-            // с кучей объектов
-            if (booking.getStart().isAfter(next)){
-                if(now.isEqual(next) || booking.getStart().isBefore(next)){
-                    next = booking.getStart();
-                    nextB = booking;
-                }
-            }
-            if(booking.getEnd().isBefore(last)){
-                if(now.isEqual(last) || booking.getStart().isAfter(last)) {
-                    last = booking.getEnd();
-                    lastB = booking;
-                }
-            }
-            return ItemMapper.mapToItemWitchCommentDto(item,lastB,nextB,comments);
+        long ownerId = item.getOwner().getId();
+        if (ownerId == userId) {
+            addBookingsToItem(itemWithCommentDto);
         }
-
-
-
-        return null;
+        addCommentsToItem(itemWithCommentDto);
+        log.info("Получил класс ItemWithCommentDto = {} ", itemWithCommentDto);
+        return itemWithCommentDto;
     }
 
     @Override
     public List<ItemDto> getAll() {
         log.info("Получение всего списка");
-        return ItemMapper.mapToItemDto(itemDao.findAll());
+        List<Item> items = itemDao.findAll();
+        log.info("Обьектов в списке = {} ", items.size());
+        return ItemMapper.mapToItemDto(items);
     }
 
     @Override
     public List<ItemDto> searchByText(String text, long userId) {
-        log.info("Получение списка по тексту text = {}",text);
-        return ItemMapper.mapToItemDto(itemDao.getListILikeByText(text, userId));
+        log.info("Получение списка по тексту text = {}", text);
+        if (text.isBlank()) {
+            return Collections.emptyList();
+        }
+        List<Item> items = itemDao.getListILikeByText(text.toLowerCase());
+        log.info("Обьектов в списке = {} ", items.size());
+        return ItemMapper.mapToItemDto(items);
     }
 
     @Override
+    @Transactional
     public CommentDto createComment(Long userId, Long itemId, CommentDto commentDto) {
-        Item item = itemDao.getWithUserIdAndItemId(userId, itemId)
-                .orElseThrow( () -> new NotFoundException("Предмет не найден по itemId = " + itemId +
-                        " и userId = " + userId));
-        User user = item.getOwner();
+        User owner = userDao.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User не найден по id = " + userId));
+        Item item = itemDao.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Item не найден по id = " + itemId));
 
-        Comment comment = Comment.builder()
-                .text(commentDto.getText())
-                .author(user)
-                .item(item)
-                .build();
+        List<Booking> bookingsItemByUser = bookingDao
+                .findByBookerIdAndItemIdAndStatusAndStartIsBefore(userId, itemId, Status.APPROVED, LocalDateTime.now());
+        if (bookingsItemByUser.isEmpty()) {
+            throw new ValidationException(
+                    String.format("User с id %s не арендовал вещь с id %s", userId, itemId));
+        }
+        if (commentDto.getText().isBlank()) throw new IllegalArgumentException("Text не может быть пустым");
+        Comment comment = CommentMapper.mapToComment(commentDto, owner, item);
 
         return CommentMapper.mapToCommentDto(commentDao.save(comment));
+    }
+
+    private void addBookingDatesToItems(Map<Long, ItemWithCommentDto> itemsWithId) {
+        Map<Long, List<Booking>> bookings = new HashMap<>();
+        List<Long> itemIds = new ArrayList<>(itemsWithId.keySet());
+
+        List<Booking> bookingsList = bookingDao.findByItemIdInAndStatusOrStatusOrderByStartAsc(itemIds,
+                Status.APPROVED, Status.WAITING);
+
+        bookingsList.forEach(booking -> bookings.computeIfAbsent(booking.getItem().getId(),
+                key -> new ArrayList<>()).add(booking));
+
+        bookings.forEach((key, value) -> lastNextBooking(value, itemsWithId.get(key)));
+    }
+
+    private void addBookingsToItem(ItemWithCommentDto itemDto) {
+        List<Booking> bookings = bookingDao.findByItemIdAndStatusOrStatusOrderByStartAsc(itemDto.getId(),
+                Status.APPROVED, Status.WAITING);
+        if (bookings.isEmpty()) {
+            return;
+        }
+        lastNextBooking(bookings, itemDto);
+    }
+
+    private void addCommentsToItem(ItemWithCommentDto itemDto) {
+        commentDao.findAllByItemIdOrderByCreatedDesc(itemDto.getId())
+                .forEach(comment -> itemDto.addComment(CommentMapper.mapToCommentDto(comment)));
+    }
+
+    private void lastNextBooking(List<Booking> bookings, ItemWithCommentDto itemDto) {
+
+        Booking lastBooking;
+        Booking nextBooking = null;
+        LocalDateTime now = LocalDateTime.now();
+
+
+        if (bookings.get(0).getStart().isAfter(now)) {
+            itemDto.setNextBooking(BookingMapper.mapToBookingDtoItem(bookings.get(0)));
+            return;
+        } else {
+            lastBooking = bookings.get(0);
+        }
+
+        for (int i = 1; i < bookings.size(); i++) {
+            if (bookings.get(i).getStart().isAfter(now)) {
+                lastBooking = bookings.get(i - 1);
+                nextBooking = bookings.get(i);
+                break;
+            }
+        }
+        itemDto.setLastBooking(BookingMapper.mapToBookingDtoItem(lastBooking));
+        if (nextBooking != null) {
+            itemDto.setNextBooking(BookingMapper.mapToBookingDtoItem(nextBooking));
+        }
+        ;
     }
 
 

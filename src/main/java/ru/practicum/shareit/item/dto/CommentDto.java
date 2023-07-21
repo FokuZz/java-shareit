@@ -3,10 +3,7 @@ package ru.practicum.shareit.item.dto;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.user.User;
 
 import javax.persistence.Id;
 import java.time.LocalDateTime;
@@ -20,7 +17,7 @@ public class CommentDto {
     long id;
     String text;
     Long itemId;
-    Long authorId;
+    String authorName;
     LocalDateTime created;
 
     @Override

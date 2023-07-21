@@ -1,9 +1,10 @@
 package ru.practicum.shareit.item;
 
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -12,19 +13,21 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "comments")
 @Data
-@Builder
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+    @Column
     String text;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     Item item;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "author_id")
     User author;
+    @Column(name = "created")
+    @CreationTimestamp
     LocalDateTime created;
 }

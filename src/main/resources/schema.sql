@@ -16,14 +16,14 @@ CREATE TABLE item_requests
 
 CREATE TABLE items
 (
-    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name        VARCHAR(255),
-    description VARCHAR(255),
-    available   boolean,
-    owner_id    BIGINT,
-    request_id  BIGINT,
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name         VARCHAR(255),
+    description  VARCHAR(255),
+    available    boolean,
+    owner_id     BIGINT,
+    requester_id BIGINT,
     FOREIGN KEY (owner_id) REFERENCES users (id),
-    FOREIGN KEY (request_id) REFERENCES item_requests (id)
+    FOREIGN KEY (requester_id) REFERENCES item_requests (id)
 );
 
 CREATE TABLE bookings
@@ -33,6 +33,7 @@ CREATE TABLE bookings
     `end`     TIMESTAMP WITHOUT TIME ZONE,
     item_id   BIGINT,
     booker_id BIGINT,
+    status    varchar(32),
     FOREIGN KEY (item_id) REFERENCES items (id),
     FOREIGN KEY (booker_id) REFERENCES users (id)
 );

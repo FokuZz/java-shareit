@@ -17,7 +17,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemWithCommentDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
         return itemService.getItemsByUserId(userId);
     }
 
@@ -41,8 +41,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithCommentDto getItem(@PathVariable long itemId) {
-        return itemService.getItem(itemId);
+    public ItemWithCommentDto getItem(@RequestHeader("X-Sharer-User-Id") long userId,
+                                      @PathVariable long itemId) {
+        return itemService.getItem(userId, itemId);
     }
 
     @GetMapping("/search")

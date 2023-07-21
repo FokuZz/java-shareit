@@ -2,27 +2,22 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.dto.BookingMapper;
-import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
     public static Item mapToItem(ItemDto itemDto, User owner){
-        return Item.builder()
-                .id(itemDto.getId())
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .owner(owner)
-                .build();
+        Item item = new Item();
+        item.setId(itemDto.getId());
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable());
+        item.setOwner(owner);
+        return item;
     }
 
     public static ItemDto mapToItemDto(Item item){
@@ -42,16 +37,12 @@ public class ItemMapper {
         return itemDtos;
     }
 
-    public static ItemWithCommentDto mapToItemWitchCommentDto(Item item, Booking next,
-                                                              Booking last, List<Comment> comments){
+    public static ItemWithCommentDto mapToItemWitchCommentDto(Item item) {
         return ItemWithCommentDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.isAvailable())
-                .nextBooking(BookingMapper.mapToBookingDto(next))
-                .lastBooking(BookingMapper.mapToBookingDto(last))
-                .comments(CommentMapper.mapToCommentDto(comments))
                 .build();
     }
 
