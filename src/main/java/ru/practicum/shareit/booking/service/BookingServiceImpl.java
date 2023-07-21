@@ -103,8 +103,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoObjects> getListOfUserBooker(Long userId, State state) {
-        log.info("Попытка получения списка id бронирований создателя по статусу userId = {} state = {}"
-                , userId, state);
+        log.info("Попытка получения списка id бронирований создателя по статусу userId = {} state = {}",
+                userId, state);
         LocalDateTime time = LocalDateTime.now();
         getUser(userId);
         List<Booking> bookings;
@@ -135,8 +135,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoObjects> getListBookerOfOwnerItems(Long userId, State state) {
-        log.info("Попытка получения списка id бронирований пользователя предметов по статусу userId = {} state = {}"
-                , userId, state);
+        log.info("Попытка получения списка id бронирований пользователя предметов по статусу userId = {} state = {}",
+                userId, state);
         LocalDateTime time = LocalDateTime.now();
         getUser(userId);
         List<Booking> bookings;

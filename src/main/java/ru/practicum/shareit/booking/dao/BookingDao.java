@@ -57,11 +57,11 @@ public interface BookingDao extends JpaRepository<Booking, Long> {
 
     List<Booking> findByBookerIdAndStartIsAfterOrderByStartDesc(Long id, LocalDateTime time);
 
-    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long booker_id, LocalDateTime start, LocalDateTime end);
+    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long bookerId, LocalDateTime start, LocalDateTime end);
 
     List<Booking> findByBookerIdAndStatus(Long id, Status status);
 
-    List<Booking> findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long item_owner_id, LocalDateTime start, LocalDateTime end);
+    List<Booking> findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(Long itemOwnerId, LocalDateTime start, LocalDateTime end);
 
     List<Booking> findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(Long userId, LocalDateTime time);
 
