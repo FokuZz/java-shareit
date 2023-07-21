@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 
 public class CommentMapper {
-    public static Comment mapToComment(CommentDto commentDto, User user, Item item ) {
+    public static Comment mapToComment(CommentDto commentDto, User user, Item item) {
         Comment comment = new Comment();
         comment.setId(commentDto.getId());
         comment.setText(commentDto.getText());
@@ -22,7 +22,7 @@ public class CommentMapper {
         return comment;
     }
 
-    public static CommentDto mapToCommentDto(Comment comment){
+    public static CommentDto mapToCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -32,9 +32,9 @@ public class CommentMapper {
                 .build();
     }
 
-    public static List<CommentDto> mapToCommentDto(Iterable<Comment> comments){
+    public static List<CommentDto> mapToCommentDto(Iterable<Comment> comments) {
         List<CommentDto> commentDtos = new ArrayList<>();
-        for(Comment comment: comments){
+        for (Comment comment : comments) {
             commentDtos.add(mapToCommentDto(comment));
         }
         return commentDtos;

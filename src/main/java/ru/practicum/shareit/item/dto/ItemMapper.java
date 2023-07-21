@@ -10,7 +10,7 @@ import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
-    public static Item mapToItem(ItemDto itemDto, User owner){
+    public static Item mapToItem(ItemDto itemDto, User owner) {
         Item item = new Item();
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());
@@ -20,7 +20,7 @@ public class ItemMapper {
         return item;
     }
 
-    public static ItemDto mapToItemDto(Item item){
+    public static ItemDto mapToItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -29,9 +29,9 @@ public class ItemMapper {
                 .build();
     }
 
-    public static List<ItemDto> mapToItemDto(Iterable<Item> items){
+    public static List<ItemDto> mapToItemDto(Iterable<Item> items) {
         List<ItemDto> itemDtos = new ArrayList<>();
-        for(Item item : items){
+        for (Item item : items) {
             itemDtos.add(mapToItemDto(item));
         }
         return itemDtos;

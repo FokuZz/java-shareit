@@ -10,7 +10,6 @@ import ru.practicum.shareit.user.dao.UserDao;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
-import javax.validation.ValidationException;
 import java.util.List;
 
 @Service
@@ -58,7 +57,7 @@ public class UserServiceImpl implements UserService {
         if (isHasName) user.setName(userDto.getName());
         if (isHasEmail) user.setEmail(userDto.getEmail());
 
-        log.info("Пользователь user = {}",user);
+        log.info("Пользователь user = {}", user);
         return UserMapper.mapToUserDto(userDao.save(user));
     }
 

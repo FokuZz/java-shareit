@@ -27,7 +27,7 @@ public class UserMapper {
 
     public static List<UserDto> mapToUserDto(Iterable<User> users) {
         List<UserDto> userDtos = new ArrayList<>();
-        for(User user : users){
+        for (User user : users) {
             userDtos.add(mapToUserDto(user));
         }
         return userDtos;

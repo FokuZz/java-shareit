@@ -14,15 +14,11 @@ import java.util.Objects;
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 @Builder
 public class ItemWithCommentDto {
-    long id;
-
-    String name;
-
-    String description;
-
-    Boolean available;
-
     final List<CommentDto> comments = new ArrayList<>();
+    long id;
+    String name;
+    String description;
+    Boolean available;
     BookingDtoItem lastBooking;
     BookingDtoItem nextBooking;
 

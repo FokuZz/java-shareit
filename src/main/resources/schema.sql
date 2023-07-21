@@ -41,7 +41,7 @@ CREATE TABLE bookings
 CREATE TABLE comments
 (
     id        BIGINT PRIMARY KEY AUTO_INCREMENT,
-    text   VARCHAR(255),
+    text      VARCHAR(255),
     item_id   BIGINT,
     author_id BIGINT,
     created   TIMESTAMP WITHOUT TIME ZONE,
