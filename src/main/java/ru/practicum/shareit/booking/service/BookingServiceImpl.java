@@ -71,7 +71,7 @@ public class BookingServiceImpl implements BookingService {
         log.info("Попытка подтверждения с userId = {}, approved = {}, bookingId = {}", userId, approved, bookingId);
         Booking booking = bookingDao.getBookerWithAll(bookingId)
                 .orElseThrow(() -> new NotFoundException("Booking не был найден по id = " + bookingId));
-        if (booking.getItem().getOwner().getId() != userId) throw new NotFoundException(
+        if (!booking.getItem().getOwner().getId().equals(userId)) throw new NotFoundException(
                 "User id не является владельцем вещи");
         if (approved) {
             if (booking.getStatus().equals(Status.APPROVED)) {
