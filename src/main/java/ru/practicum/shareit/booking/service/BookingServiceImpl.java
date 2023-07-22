@@ -34,6 +34,8 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDtoObjects createBooking(Long userId, BookingDto bookingDto) {
         log.info("Попытка создания booking = {} userId = {}", bookingDto, userId);
+        if(bookingDto.getStart() == null || bookingDto.getEnd() == null) throw new ValidationException(
+                "В теле Booking отсутствует старт/конец");
         User booker = getUser(userId);
         long itemId = bookingDto.getItemId();
         Item item = getItem(itemId);
