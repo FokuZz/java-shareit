@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+//@EnableJpaRepositories(basePackages = "ru.practicum")
+//@ComponentScan(basePackages = "ru.practicum") это тоже не помогает
 public class ShareItApp {
 
     public static void main(String[] args) {

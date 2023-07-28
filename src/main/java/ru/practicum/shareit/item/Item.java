@@ -1,35 +1,53 @@
 package ru.practicum.shareit.item;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.user.User;
+
+import javax.persistence.*;
 
 @Data
-@Builder
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@Entity
+@Table(name = "items")
+@NoArgsConstructor
 public class Item {
-    @NonNull
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @NonNull
+    @Column(nullable = false)
     String name;
 
+    @Column(nullable = false)
     String description;
 
+    @Column(nullable = false)
     boolean available;
 
-    Long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @JoinColumn(name = "owner_id")
+    User owner;
 
-    Long requestId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @JoinColumn(name = "requester_id")
+    ItemRequest requester;
 
-    public Item(long id, String name, String description, boolean available, Long ownerId, Long requestId) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.ownerId = ownerId;
-        this.requestId = requestId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return id != null && id.equals(((Item) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -1,27 +1,49 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.isAvailable()
-        );
+    public static Item mapToItem(ItemDto itemDto, User owner) {
+        Item item = new Item();
+        item.setId(itemDto.getId());
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable());
+        item.setOwner(owner);
+        return item;
     }
 
-    public static Item rsToItem(ResultSet rs) throws SQLException {
-        return new Item(rs.getLong("id"),
-                rs.getString("name"),
-                rs.getString("description"),
-                rs.getBoolean("available"),
-                rs.getLong("owner_id"),
-                rs.getLong("request_id")
-        );
+    public static ItemDto mapToItemDto(Item item) {
+        return ItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.isAvailable())
+                .build();
     }
+
+    public static List<ItemDto> mapToItemDto(Iterable<Item> items) {
+        List<ItemDto> itemDtos = new ArrayList<>();
+        for (Item item : items) {
+            itemDtos.add(mapToItemDto(item));
+        }
+        return itemDtos;
+    }
+
+    public static ItemWithCommentDto mapToItemWitchCommentDto(Item item) {
+        return ItemWithCommentDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.isAvailable())
+                .build();
+    }
+
 }
