@@ -35,9 +35,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceImplTest {
-    private final Sort SORT = Sort.by(Sort.Direction.DESC, "start");
-    private final LocalDateTime NOW = LocalDateTime.now();
-
     @Mock
     BookingDao bookingDao;
     @InjectMocks
@@ -56,8 +53,8 @@ class BookingServiceImplTest {
 
     @BeforeEach
     void setup() {
-        LocalDateTime start = NOW.plusHours(3);
-        LocalDateTime end = NOW.plusHours(5);
+        LocalDateTime start = LocalDateTime.now().plusHours(3);
+        LocalDateTime end = LocalDateTime.now().plusHours(5);
         owner = new User();
         owner.setName("artem");
         owner.setEmail("artemka@mail.ru");
@@ -259,7 +256,7 @@ class BookingServiceImplTest {
         int from = 0;
         int size = 1;
         long userId = booker.getId();
-        PageRequest page = PageRequest.of(0, size, SORT);
+        PageRequest page = PageRequest.of(0, size, Sort.Direction.DESC, "start");
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
         when(bookingDao.findAllByBookerIdOrderByStartDesc(userId, page)).thenReturn(new PageImpl<>(List.of(booking)));
         List<BookingDtoObjects> bookingOutDtos = service.getListOfUserBooker(userId, State.ALL, from, size);
@@ -290,7 +287,7 @@ class BookingServiceImplTest {
         int from = 0;
         int size = 1;
         long userId = booker.getId();
-        booking.setEnd(NOW.plusSeconds(120));
+        booking.setEnd(LocalDateTime.now().plusSeconds(120));
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
         when(bookingDao.findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(anyLong(), any(), any(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(booking)));
 
@@ -306,7 +303,7 @@ class BookingServiceImplTest {
         int from = 0;
         int size = 1;
         long userId = booker.getId();
-        booking.setStart(NOW.plusSeconds(60));
+        booking.setStart(LocalDateTime.now().plusSeconds(60));
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
         when(bookingDao.findByBookerIdAndStartIsAfterOrderByStartDesc(anyLong(), any(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(booking)));
 
@@ -368,7 +365,7 @@ class BookingServiceImplTest {
         int from = 0;
         int size = 1;
         long userId = owner.getId();
-        PageRequest page = PageRequest.of(0, size, SORT);
+        PageRequest page = PageRequest.of(0, size, Sort.Direction.DESC, "start");
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
         when(bookingDao.findByItemOwnerIdOrderByStartDesc(userId, page)).thenReturn(new PageImpl<>(List.of(booking)));
 
@@ -400,7 +397,7 @@ class BookingServiceImplTest {
         int from = 0;
         int size = 1;
         long userId = owner.getId();
-        booking.setEnd(NOW.plusSeconds(120));
+        booking.setEnd(LocalDateTime.now().plusSeconds(120));
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
         when(bookingDao.findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(anyLong(), any(), any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(booking)));
@@ -417,7 +414,7 @@ class BookingServiceImplTest {
         int from = 0;
         int size = 1;
         long userId = owner.getId();
-        booking.setStart(NOW.plusSeconds(60));
+        booking.setStart(LocalDateTime.now().plusSeconds(60));
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
         when(bookingDao.findByItemOwnerIdAndStartIsAfterOrderByStartDesc(anyLong(), any(), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(booking)));
 
