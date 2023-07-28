@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.booking.dto.BookingDtoItem;
+import ru.practicum.shareit.booking.dto.BookingItemDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +15,14 @@ import java.util.Objects;
 @Builder
 public class ItemWithCommentDto {
     final List<CommentDto> comments = new ArrayList<>();
-    long id;
+    Long id;
     String name;
     String description;
     Boolean available;
-    BookingDtoItem lastBooking;
-    BookingDtoItem nextBooking;
+    Long requestId;
+
+    BookingItemDto lastBooking;
+    BookingItemDto nextBooking;
 
     public void addComment(CommentDto comment) {
         comments.add(comment);

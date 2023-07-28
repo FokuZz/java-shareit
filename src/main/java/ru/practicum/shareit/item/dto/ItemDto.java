@@ -12,12 +12,13 @@ import java.util.Objects;
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 @Builder
 public class ItemDto {
-    long id;
+    Long id;
 
     String name;
-    String description;
 
+    String description;
     Boolean available;
+    Long requestId;
 
     @Override
     public boolean equals(Object o) {

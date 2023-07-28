@@ -15,8 +15,8 @@ public interface BookingService {
 
     BookingDtoObjects getOnlyOwnerOrBooker(Long userId, Long bookingId);
 
-    List<BookingDtoObjects> getListOfUserBooker(Long userId, State state);
+    List<BookingDtoObjects> getListOfUserBooker(Long userId, State state, int from, int size);
 
-    List<BookingDtoObjects> getListBookerOfOwnerItems(Long userId, State state);
+    List<BookingDtoObjects> getListBookerOfOwnerItems(Long userId, State state, int from, int size);
 
 }

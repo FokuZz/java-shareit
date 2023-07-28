@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
-public class BookingDtoItem {
+public class BookingItemDto {
 
     Long id;
     LocalDateTime start;

@@ -2,8 +2,8 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dao.BookingDao;
@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
 public class ItemServiceImpl implements ItemService {
@@ -35,21 +34,21 @@ public class ItemServiceImpl implements ItemService {
     private final BookingDao bookingDao;
 
     @Override
-    public List<ItemWithCommentDto> getItemsByUserId(long userId) {
+    public List<ItemWithCommentDto> getItemsByUserId(long userId, int from, int size) {
         log.info("Попытка получения списка предметов по userId = {}", userId);
-        List<Item> items = itemDao.findItemsByOwnerId(userId);
+        PageRequest page = PageRequest.of(from / size, size);
+        List<Item> items = itemDao.findItemsByOwnerId(userId, page).getContent();
         if (items.isEmpty()) {
             return Collections.emptyList();
         }
         Map<Long, ItemWithCommentDto> itemsWithIds = new HashMap<>();
         items.forEach(item -> itemsWithIds.put(item.getId(), ItemMapper.mapToItemWitchCommentDto(item)));
-        addBookingDatesToItems(itemsWithIds);
+        addCommentsToItems(itemsWithIds);
         addBookingDatesToItems(itemsWithIds);
         return new ArrayList<>(itemsWithIds.values());
     }
 
     @Override
-    @Transactional
     public ItemDto create(long userId, ItemDto itemDto) {
         log.info("Попытка создания с id {} itemDto {}", userId, itemDto);
         boolean isNullAvailable = itemDto.getAvailable() == null;
@@ -67,14 +66,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public void deleteByUserIdAndItemId(long userId, long itemId) {
         log.info("Попытка удаления по userId {} и itemId {}", userId, itemId);
         itemDao.deleteByIdAndOwnerId(userId, itemId);
     }
 
     @Override
-    @Transactional
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
         log.info("Попытка обновления с userId {} itemId {} ItemDto {}", userId, itemId, itemDto);
         Item item = itemDao.findByIdAndOwnerId(itemId, userId)
@@ -116,18 +113,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchByText(String text, long userId) {
+    public List<ItemDto> searchByText(String text, int from, int size) {
         log.info("Получение списка по тексту text = {}", text);
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        List<Item> items = itemDao.getListILikeByText(text.toLowerCase());
+        PageRequest page = PageRequest.of(from / size, size);
+        List<Item> items = itemDao.getListILikeByText(text.toLowerCase(), page).getContent();
         log.info("Обьектов в списке = {} ", items.size());
         return ItemMapper.mapToItemDto(items);
     }
 
     @Override
-    @Transactional
+
     public CommentDto createComment(Long userId, Long itemId, CommentDto commentDto) {
         User owner = userDao.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User не найден по id = " + userId));
@@ -173,20 +171,24 @@ public class ItemServiceImpl implements ItemService {
                 .forEach(comment -> itemDto.addComment(CommentMapper.mapToCommentDto(comment)));
     }
 
-    private void lastNextBooking(List<Booking> bookings, ItemWithCommentDto itemDto) {
+    private void addCommentsToItems(Map<Long, ItemWithCommentDto> itemsWithId) {
+        List<Long> itemIds = new ArrayList<>(itemsWithId.keySet());
+        commentDao.findAllByItemIdInOrderByCreatedDesc(itemIds)
+                .forEach(comment -> itemsWithId.get(comment.getItem().getId())
+                        .addComment(CommentMapper.mapToCommentDto(comment)));
 
+    }
+
+    private void lastNextBooking(List<Booking> bookings, ItemWithCommentDto itemDto) {
         Booking lastBooking;
         Booking nextBooking = null;
         LocalDateTime now = LocalDateTime.now();
-
-
         if (bookings.get(0).getStart().isAfter(now)) {
             itemDto.setNextBooking(BookingMapper.mapToBookingDtoItem(bookings.get(0)));
             return;
         } else {
             lastBooking = bookings.get(0);
         }
-
         for (int i = 1; i < bookings.size(); i++) {
             if (bookings.get(i).getStart().isAfter(now)) {
                 lastBooking = bookings.get(i - 1);
@@ -198,7 +200,6 @@ public class ItemServiceImpl implements ItemService {
         if (nextBooking != null) {
             itemDto.setNextBooking(BookingMapper.mapToBookingDtoItem(nextBooking));
         }
-        ;
     }
 
 

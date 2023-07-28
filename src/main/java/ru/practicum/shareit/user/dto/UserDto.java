@@ -15,6 +15,6 @@ public class UserDto {
 
     String name;
 
-    @Email
+    @Email(message = "Поле email не соответствует формату EMAIL")
     String email;
 }

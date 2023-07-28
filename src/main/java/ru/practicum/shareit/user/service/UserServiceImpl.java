@@ -10,6 +10,7 @@ import ru.practicum.shareit.user.dao.UserDao;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
+import javax.validation.ValidationException;
 import java.util.List;
 
 @Service
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto create(UserDto userDto) {
         log.info("Попытка создания пользователя по UserDto = {}", userDto);
+
         repeatCheck(userDto);
         return UserMapper.mapToUserDto(userDao.save(UserMapper.mapToUser(userDto)));
     }
@@ -54,10 +56,16 @@ public class UserServiceImpl implements UserService {
         boolean isHasName = userDto.getName() != null;
         boolean isHasEmail = userDto.getEmail() != null;
 
-        if (isHasName) user.setName(userDto.getName());
-        if (isHasEmail) user.setEmail(userDto.getEmail());
+        if (isHasName) {
+            if (userDto.getName().isBlank()) throw new ValidationException("Поле name не может быть пустым");
+            user.setName(userDto.getName());
+        }
+        if (isHasEmail) {
+            if (userDto.getEmail().isBlank()) throw new ValidationException("Поле email не может быть пустым");
+            user.setEmail(userDto.getEmail());
+        }
 
-        log.info("Пользователь user = {}", user);
+        log.info("Обновление user = {}", user);
         return UserMapper.mapToUserDto(userDao.save(user));
     }
 
@@ -65,7 +73,7 @@ public class UserServiceImpl implements UserService {
         List<UserDto> userDtos = UserMapper.mapToUserDto(userDao.findAll());
         userDtos.forEach(user -> {
             if (user.getEmail().equals(userDto.getEmail())) {
-                throw new AlreadyExist(String.format("Пользователь %s уже существует", userDto));
+                throw new AlreadyExist(String.format("User %s уже существует", userDto));
             }
         });
     }
@@ -75,7 +83,7 @@ public class UserServiceImpl implements UserService {
         userDtos.forEach(user -> {
             if (user.getEmail().equals(userDto.getEmail())
                     && user.getId() != userId) {
-                throw new AlreadyExist(String.format("Пользователь %s уже существует", userDto));
+                throw new AlreadyExist(String.format("User %s уже существует", userDto));
             }
         });
     }

@@ -2,8 +2,9 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.State;
 import ru.practicum.shareit.booking.Status;
@@ -12,6 +13,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoObjects;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UnsupportedStatusException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.user.User;
@@ -22,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
@@ -31,11 +32,11 @@ public class BookingServiceImpl implements BookingService {
     private final ItemDao itemDao;
 
     @Override
-    @Transactional
     public BookingDtoObjects createBooking(Long userId, BookingDto bookingDto) {
         log.info("Попытка создания booking = {} userId = {}", bookingDto, userId);
         if (bookingDto.getStart() == null || bookingDto.getEnd() == null) throw new ValidationException(
                 "В теле Booking отсутствует старт/конец");
+        if (bookingDto.getItemId() == null) throw new ValidationException("Отсутствует itemId");
         User booker = getUser(userId);
         long itemId = bookingDto.getItemId();
         Item item = getItem(itemId);
@@ -49,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
         if (!bookingDto.getEnd().isAfter(bookingDto.getStart())) throw new ValidationException(
                 "Дата окончания бронирования должна быть после даты начала");
 
-        List<Booking> bookings = bookingDao.isAvailbleTime(itemId, bookingDto.getStart(), bookingDto.getEnd());
+        List<Booking> bookings = bookingDao.isAvailableTime(itemId, bookingDto.getStart(), bookingDto.getEnd());
 
         if (bookingDto.getStart().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Значение Start при аренде не может быть в прошлом");
@@ -68,22 +69,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public BookingDtoObjects confirmation(Long userId, boolean approved, Long bookingId) {
         log.info("Попытка подтверждения с userId = {}, approved = {}, bookingId = {}", userId, approved, bookingId);
-        Booking booking = bookingDao.getBookerWithAll(bookingId)
+        Booking booking = bookingDao.getBookingWithAll(bookingId)
                 .orElseThrow(() -> new NotFoundException("Booking не был найден по id = " + bookingId));
         if (!booking.getItem().getOwner().getId().equals(userId)) throw new NotFoundException(
                 "User id не является владельцем вещи");
         if (approved) {
             if (booking.getStatus().equals(Status.APPROVED)) {
-                log.warn("Booker с id {} уже подтверждено", bookingId);
                 throw new ValidationException(String.format("Бронирование с id %d уже подтверждено", bookingId));
             }
             booking.setStatus(Status.APPROVED);
         } else {
             if (booking.getStatus().equals(Status.REJECTED)) {
-                log.warn("Booker с id {} уже отклонено", bookingId);
                 throw new ValidationException(String.format("Бронирование с id %d уже отклонено", bookingId));
             }
             booking.setStatus(Status.REJECTED);
@@ -104,65 +102,73 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoObjects> getListOfUserBooker(Long userId, State state) {
+    public List<BookingDtoObjects> getListOfUserBooker(Long userId, State state, int from, int size) {
         log.info("Попытка получения списка id бронирований создателя по статусу userId = {} state = {}",
                 userId, state);
+        PageRequest page = PageRequest.of(from / size, size, Sort.Direction.DESC, "start");
         LocalDateTime time = LocalDateTime.now();
         getUser(userId);
         List<Booking> bookings;
         switch (state) {
             case ALL:
-                bookings = bookingDao.findAllByBookerIdOrderByStartDesc(userId);
+                bookings = bookingDao.findAllByBookerIdOrderByStartDesc(userId, page).getContent();
                 break;
             case CURRENT:
-                bookings = bookingDao.findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(userId, time, time);
+                bookings = bookingDao.findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(userId, time,
+                        time, page).getContent();
                 break;
             case PAST:
-                bookings = bookingDao.findByBookerIdAndEndIsBeforeOrderByStartDesc(userId, time);
+                bookings = bookingDao.findByBookerIdAndEndIsBeforeOrderByStartDesc(userId, time, page).getContent();
                 break;
             case FUTURE:
-                bookings = bookingDao.findByBookerIdAndStartIsAfterOrderByStartDesc(userId, time);
+                bookings = bookingDao.findByBookerIdAndStartIsAfterOrderByStartDesc(userId, time, page).getContent();
                 break;
             case WAITING:
-                bookings = bookingDao.findByBookerIdAndStatusOrderByStartDesc(userId, Status.WAITING);
+                bookings = bookingDao.findByBookerIdAndStatusOrderByStartDesc(userId,
+                        Status.WAITING, page).getContent();
                 break;
             case REJECTED:
-                bookings = bookingDao.findByBookerIdAndStatusOrderByStartDesc(userId, Status.REJECTED);
+                bookings = bookingDao.findByBookerIdAndStatusOrderByStartDesc(userId,
+                        Status.REJECTED, page).getContent();
                 break;
             default:
-                throw new RuntimeException("Unknown state: UNSUPPORTED_STATUS");
+                throw new UnsupportedStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.mapToBookingDtoOut(bookings);
     }
 
     @Override
-    public List<BookingDtoObjects> getListBookerOfOwnerItems(Long userId, State state) {
+    public List<BookingDtoObjects> getListBookerOfOwnerItems(Long userId, State state, int from, int size) {
         log.info("Попытка получения списка id бронирований пользователя предметов по статусу userId = {} state = {}",
                 userId, state);
+        PageRequest page = PageRequest.of(from / size, size, Sort.Direction.DESC, "start");
         LocalDateTime time = LocalDateTime.now();
         getUser(userId);
         List<Booking> bookings;
         switch (state) {
             case ALL:
-                bookings = bookingDao.findByItemOwnerIdOrderByStartDesc(userId);
+                bookings = bookingDao.findByItemOwnerIdOrderByStartDesc(userId, page).getContent();
                 break;
             case CURRENT:
-                bookings = bookingDao.findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(userId, time, time);
+                bookings = bookingDao.findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(userId, time,
+                        time, page).getContent();
                 break;
             case PAST:
-                bookings = bookingDao.findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(userId, time);
+                bookings = bookingDao.findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(userId, time, page).getContent();
                 break;
             case FUTURE:
-                bookings = bookingDao.findByItemOwnerIdAndStartIsAfterOrderByStartDesc(userId, time);
+                bookings = bookingDao.findByItemOwnerIdAndStartIsAfterOrderByStartDesc(userId, time, page).getContent();
                 break;
             case WAITING:
-                bookings = bookingDao.findByItemOwnerIdAndStatusOrderByStartDesc(userId, Status.WAITING);
+                bookings = bookingDao.findByItemOwnerIdAndStatusOrderByStartDesc(userId,
+                        Status.WAITING, page).getContent();
                 break;
             case REJECTED:
-                bookings = bookingDao.findByItemOwnerIdAndStatusOrderByStartDesc(userId, Status.REJECTED);
+                bookings = bookingDao.findByItemOwnerIdAndStatusOrderByStartDesc(userId,
+                        Status.REJECTED, page).getContent();
                 break;
             default:
-                throw new RuntimeException("Unknown state: UNSUPPORTED_STATUS");
+                throw new UnsupportedStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
         return BookingMapper.mapToBookingDtoOut(bookings);
     }
