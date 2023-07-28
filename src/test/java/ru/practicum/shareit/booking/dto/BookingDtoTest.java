@@ -8,7 +8,6 @@ import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.booking.Status;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
