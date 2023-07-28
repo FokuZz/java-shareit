@@ -27,9 +27,8 @@ class BookingItemDtoTest {
         Status status = Status.WAITING;
         BookingItemDto bookingItemDto = new BookingItemDto(id, start, end, bookerId, status);
         JsonContent<BookingItemDto> result = json.write(bookingItemDto);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS");
-        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo(start.format(formatter));
-        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo(end.format(formatter));
+        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo(start.toString());
+        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo(end.toString());
         assertThat(result).extractingJsonPathValue("$.bookerId").isEqualTo((int) bookerId);
         assertThat(result).extractingJsonPathStringValue("$.status").isEqualTo(status.toString());
     }

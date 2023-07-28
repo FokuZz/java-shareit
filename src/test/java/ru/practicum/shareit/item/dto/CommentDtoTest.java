@@ -21,7 +21,6 @@ class CommentDtoTest {
         long id = 1L;
         String text = "text";
         String authorName = "name";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS");
 
         LocalDateTime created = LocalDateTime.now();
         CommentDto commentDto = new CommentDto(id, text, authorName, created);
@@ -29,7 +28,7 @@ class CommentDtoTest {
 
         assertThat(result).extractingJsonPathStringValue("$.authorName").isEqualTo(authorName);
         assertThat(result).extractingJsonPathStringValue("$.text").isEqualTo(text);
-        assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo(created.format(formatter));
+        assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo(created.toString());
     }
 
 }
