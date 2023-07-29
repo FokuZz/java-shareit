@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.request.ItemRequest;
@@ -21,6 +20,7 @@ import ru.practicum.shareit.request.dto.ItemRequestItemsDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserDao;
 
+import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -89,12 +89,23 @@ class ItemRequestServiceImplTest {
     void testCreateFailUserNotFound() {
         long userNotFoundId = 0L;
         String error = String.format("User с id %d не найден", userNotFoundId);
-        when(userDao.findById(userNotFoundId)).thenThrow(new NotFoundException(error));
-        NotFoundException exception = assertThrows(
-                NotFoundException.class,
+        when(userDao.findById(userNotFoundId)).thenThrow(new ValidationException(error));
+        ValidationException exception = assertThrows(
+                ValidationException.class,
                 () -> service.create(userNotFoundId, ItemRequestDto.builder().description("description").build())
         );
         assertEquals(error, exception.getMessage());
+        verify(itemRequestDao, times(0)).save(any());
+    }
+
+    @Test
+    void testCreateFailDescriptionBlank() {
+        long userNotFoundId = 0L;
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.create(userNotFoundId, ItemRequestDto.builder().description("").build())
+        );
+        assertEquals("Текст описания не может быть пустой", exception.getMessage());
         verify(itemRequestDao, times(0)).save(any());
     }
 

@@ -181,6 +181,27 @@ class BookingServiceImplTest {
         assertEquals(booking.getId(), bookingOutDto.getId());
     }
 
+
+    @Test
+    void testCreateBookingFailStartInBefore() {
+        LocalDateTime start = booking.getStart().minusDays(1);
+        LocalDateTime end = booking.getEnd();
+        long itemId = item.getId();
+        long bookerId = booker.getId();
+        BookingDto bookingToSave = BookingDto.builder()
+                .itemId(itemId)
+                .start(start)
+                .end(end)
+                .build();
+        when(itemDao.findById(itemId)).thenReturn(Optional.of(item));
+        when(userDao.findById(bookerId)).thenReturn(Optional.of(booker));
+
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.createBooking(bookerId,  bookingToSave)
+        );
+    }
+
     @Test
     void testConfirmationFailStatusAlreadyTrue() {
         long userId = owner.getId();
@@ -196,7 +217,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void testConfirmationStandard() {
+    void testConfirmationStandardFalse() {
         long userId = owner.getId();
         long bookingId = booking.getId();
         when(bookingDao.getBookingWithAll(bookingId)).thenReturn(Optional.of(booking));
@@ -204,6 +225,33 @@ class BookingServiceImplTest {
         BookingDtoObjects bookingOutDto = service.confirmation(userId, false, bookingId);
         assertNotNull(bookingOutDto);
         assertEquals(booking.getId(), bookingOutDto.getId());
+    }
+
+    @Test
+    void testConfirmationStandardTrue() {
+        long userId = owner.getId();
+        long bookingId = booking.getId();
+        Booking bookingTest = booking;
+        bookingTest.setStatus(Status.WAITING);
+        when(bookingDao.getBookingWithAll(bookingId)).thenReturn(Optional.of(bookingTest));
+        when(bookingDao.save(any())).thenReturn(bookingTest);
+        BookingDtoObjects bookingOutDto = service.confirmation(userId, true, bookingId);
+        assertNotNull(bookingOutDto);
+        assertEquals(booking.getId(), bookingOutDto.getId());
+    }
+
+    @Test
+    void testConfirmationFail() {
+        long userId = owner.getId();
+        long bookingId = booking.getId();
+        Booking bookingTest = booking;
+        bookingTest.setStatus(Status.REJECTED);
+        when(bookingDao.getBookingWithAll(bookingId)).thenReturn(Optional.of(bookingTest));
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.confirmation(userId, false, bookingId)
+        );
+        assertEquals("Бронирование с id 1 уже отклонено", exception.getMessage());
     }
 
     @Test
@@ -337,8 +385,8 @@ class BookingServiceImplTest {
         long userId = booker.getId();
         booking.setStatus(Status.REJECTED);
         when(userDao.findById(userId)).thenReturn(Optional.of(booker));
-        when(bookingDao.findByItemOwnerIdAndStatusOrderByStartDesc(eq(userId), eq(Status.REJECTED), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(booking)));
-        List<BookingDtoObjects> bookingOutDtos = service.getListBookerOfOwnerItems(userId, State.REJECTED, from, size);
+        when(bookingDao.findByBookerIdAndStatusOrderByStartDesc(eq(userId), eq(Status.REJECTED), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(booking)));
+        List<BookingDtoObjects> bookingOutDtos = service.getListOfUserBooker(userId, State.REJECTED, from, size);
 
         assertNotNull(bookingOutDtos);
         assertEquals(1, bookingOutDtos.size());

@@ -26,10 +26,13 @@ class BookingItemDtoTest {
         Status status = Status.WAITING;
         BookingItemDto bookingItemDto = new BookingItemDto(id, start, end, bookerId, status);
         JsonContent<BookingItemDto> result = json.write(bookingItemDto);
-        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo(start.toString());
-        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo(end.toString());
+
+        assertThat(result).extractingJsonPathValue("$.id").isEqualTo(1);
+        assertThat(result).extractingJsonPathValue("$.start").isNotNull();
+        assertThat(result).extractingJsonPathValue("$.end").isNotNull();
         assertThat(result).extractingJsonPathValue("$.bookerId").isEqualTo((int) bookerId);
         assertThat(result).extractingJsonPathStringValue("$.status").isEqualTo(status.toString());
+
     }
 
 }

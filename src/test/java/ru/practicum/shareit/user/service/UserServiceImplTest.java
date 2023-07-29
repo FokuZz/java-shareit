@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.exception.AlreadyExist;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserDao;
@@ -77,9 +78,9 @@ class UserServiceImplTest {
         UserDto userDto = UserMapper.mapToUserDto(userToSave);
         String email = user.getEmail();
         String error = String.format("Пользователь с email %s уже существует", email);
-        when(userDao.save(any())).thenThrow(new RuntimeException("Пользователь с email e@mail.ru уже существует"));
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        when(userDao.save(any())).thenThrow(new AlreadyExist("Пользователь с email e@mail.ru уже существует"));
+        AlreadyExist exception = assertThrows(
+                AlreadyExist.class,
                 () -> service.create(userDto)
         );
         assertEquals(error, exception.getMessage());
@@ -115,7 +116,6 @@ class UserServiceImplTest {
     @Test
     void testPatchUserFailNotFoundUser() {
         long userIdNotFound = 0L;
-        when(userDao.findById(userIdNotFound)).thenReturn(Optional.empty());
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
                 () -> service.getUserById(userIdNotFound));
@@ -154,6 +154,22 @@ class UserServiceImplTest {
         assertNotNull(userDtoUpdated);
         assertEquals(userId, userDtoUpdated.getId());
         assertEquals(emailUpdated, userDtoUpdated.getEmail());
+    }
+
+    @Test
+    void testPatchUserFailUserNotFound() {
+        long userId = user.getId();
+        userDao.save(user);
+        UserDto userNew = UserDto.builder()
+                .id(userId)
+                .email(user.getEmail())
+                .name("")
+                .build();
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> service.updateUser(userId, userNew)
+        );
+        assertEquals("Пользователь не найден по id = 1", ex.getMessage());
     }
 
     @Test

@@ -12,6 +12,7 @@ import ru.practicum.shareit.request.dao.ItemRequestDao;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserDao;
 
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -125,5 +126,52 @@ class ItemDaoTest {
         assertNotNull(items);
         assertEquals(1, items.size());
         assertEquals(item.getId(), items.get(0).getId());
+    }
+
+    @Test
+    void search() {
+        int pageNum = 0;
+        int size = 1;
+        PageRequest page = PageRequest.of(pageNum, size);
+
+        //Empty List
+        String text = "фыва";
+        TypedQuery<Item> query = em.getEntityManager()
+                .createQuery(" select i from Item i " +
+                        "where (lower(i.name) like concat('%', :text, '%') " +
+                        " or lower(i.description) like concat('%', :text, '%')) " +
+                        " and i.available = true", Item.class);
+        List<Item> items = query.setParameter("text", text).getResultList();
+        assertEquals(0, items.size());
+        List<Item> itemsSearch = repository.getListILikeByText(text, page).getContent();
+        assertNotNull(itemsSearch);
+        assertEquals(0, itemsSearch.size());
+
+        //Single List
+        text = "отв";
+        items = query.setParameter("text", text).getResultList();
+        assertEquals(1, items.size());
+        itemsSearch = repository.getListILikeByText(text, page).getContent();
+        assertNotNull(itemsSearch);
+        assertEquals(1, itemsSearch.size());
+        assertEquals(items.get(0).getId(), itemsSearch.get(0).getId());
+
+        //With Paging
+        Item item1 = new Item();
+        item1.setOwner(owner);
+        item1.setAvailable(true);
+        item1.setName("Дрель");
+        item1.setDescription("Дрель — ваш ответ соседям с перфоратором");
+        repository.save(item1);
+
+        itemsSearch = repository.getListILikeByText(text, page).getContent();
+        assertNotNull(itemsSearch);
+        assertEquals(1, itemsSearch.size());
+
+        size = 2;
+        page = PageRequest.of(pageNum, size);
+        itemsSearch = repository.getListILikeByText(text, page).getContent();
+        assertNotNull(itemsSearch);
+        assertEquals(2, itemsSearch.size());
     }
 }

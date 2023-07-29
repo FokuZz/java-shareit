@@ -6,9 +6,6 @@ import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 
 public class CommentMapper {
@@ -29,14 +26,6 @@ public class CommentMapper {
                 .authorName(comment.getAuthor().getName())
                 .created(comment.getCreated())
                 .build();
-    }
-
-    public static List<CommentDto> mapToCommentDto(Iterable<Comment> comments) {
-        List<CommentDto> commentDtos = new ArrayList<>();
-        for (Comment comment : comments) {
-            commentDtos.add(mapToCommentDto(comment));
-        }
-        return commentDtos;
     }
 
 }

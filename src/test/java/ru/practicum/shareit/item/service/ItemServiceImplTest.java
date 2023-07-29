@@ -19,10 +19,12 @@ import ru.practicum.shareit.item.dao.CommentDao;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dao.UserDao;
 
+import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -139,6 +141,21 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void testCreateFailFind() {
+        long userId = owner.getId();
+        ItemDto itemDtoToSave = ItemDto.builder()
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.isAvailable())
+                .build();
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> service.create(userId, itemDtoToSave));
+        assertEquals("User не найден по id = 1", exception.getMessage());
+
+    }
+
+    @Test
     void testDeleteStandard() {
         long userId = owner.getId();
         long itemId = item.getId();
@@ -149,15 +166,18 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testUpdateItemEmpty() {
+    void testUpdateItemStandard() {
         long userId = owner.getId();
         long itemId = item.getId();
-        String error = "Item не был найден";
-        NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> service.updateItem(userId, itemId, ItemDto.builder().name("").build())
-        );
-        assertEquals(error, exception.getMessage());
+        ItemDto itemDtoTest = ItemMapper.mapToItemDto(item);
+        when(itemDao.findByIdAndOwnerId(itemId, userId)).thenReturn(Optional.of(item));
+        when(itemDao.save(item)).thenReturn(item);
+        ItemDto itemDto = service.updateItem(userId, itemId, itemDtoTest);
+        assertNotNull(itemDto);
+        assertEquals(item.getName(), itemDto.getName());
+        assertEquals(item.getDescription(), itemDto.getDescription());
+        assertEquals(item.isAvailable(), itemDto.getAvailable());
+
     }
 
     @Test
@@ -185,6 +205,13 @@ class ItemServiceImplTest {
         assertNotNull(itemDto);
         assertEquals(itemId, itemDto.getId());
         assertEquals(comment.getId(), itemDto.getComments().get(0).getId());
+    }
+
+    @Test
+    void testGetAll() {
+        testCreate();
+        List<ItemDto> items = service.getAll();
+        assertNotNull(items);
     }
 
     @Test
@@ -227,7 +254,22 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void testCreateComment() {
+    void testCreateCommentFailBlankText() {
+        long userId = booker.getId();
+        long itemId = item.getId();
+        when(userDao.findById(userId)).thenReturn(Optional.of(owner));
+        when(itemDao.findById(itemId)).thenReturn(Optional.of(item));
+        when(bookingDao
+                .findByBookerIdAndItemIdAndStatusAndStartIsBefore(anyLong(), anyLong(), any(), any()))
+                .thenReturn(List.of(booking));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.createComment(userId, itemId, CommentDto.builder().text("").build())
+        );
+    }
+
+    @Test
+    void testCreateCommentFailItemNotFound() {
         long itemId = item.getId();
         long ownerId = owner.getId();
         when(userDao.findById(ownerId)).thenReturn(Optional.of(owner));
@@ -236,5 +278,29 @@ class ItemServiceImplTest {
                 () -> service.createComment(ownerId, itemId, CommentDto.builder().text("text").build())
         );
         assertEquals("Item не найден по id = 1", exception.getMessage());
+    }
+
+    @Test
+    void testCreateCommentFailUserNotFound() {
+        long itemId = item.getId();
+        long ownerId = owner.getId();
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> service.createComment(ownerId, itemId, CommentDto.builder().text("text").build())
+        );
+        assertEquals("User не найден по id = 1", exception.getMessage());
+    }
+
+    @Test
+    void testCreateCommentFailUserRandom() {
+        long itemId = item.getId();
+        long ownerId = 5;
+        when(itemDao.findById(itemId)).thenReturn(Optional.of(item));
+        when(userDao.findById(ownerId)).thenReturn(Optional.of(owner));
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.createComment(ownerId, itemId, CommentDto.builder().text("text").build())
+        );
+        assertEquals("User с id 5 не арендовал вещь с id 1", exception.getMessage());
     }
 }

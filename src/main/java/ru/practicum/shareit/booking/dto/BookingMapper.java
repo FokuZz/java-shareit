@@ -45,37 +45,10 @@ public class BookingMapper {
                 .build();
     }
 
-    public static List<BookingItemDto> mapToBookingDtoItem(Iterable<Booking> bookings) {
-        List<BookingItemDto> bookingDtos = new ArrayList<>();
-        for (Booking booking : bookings) {
-            bookingDtos.add(mapToBookingDtoItem(booking));
-        }
-        return bookingDtos;
-    }
-
     public static List<BookingDtoObjects> mapToBookingDtoOut(Iterable<Booking> bookings) {
         List<BookingDtoObjects> bookingDtos = new ArrayList<>();
         for (Booking booking : bookings) {
             bookingDtos.add(mapToBookingDtoOut(booking));
-        }
-        return bookingDtos;
-    }
-
-    public static BookingDto mapToBookingDto(Booking booking) {
-        return BookingDto.builder()
-                .id(booking.getId())
-                .start(booking.getStart())
-                .end(booking.getEnd())
-                .itemId(booking.getItem().getId())
-                .bookerId(booking.getBooker().getId())
-                .status(booking.getStatus())
-                .build();
-    }
-
-    public static List<BookingDto> mapToBookingDto(Iterable<Booking> bookings) {
-        List<BookingDto> bookingDtos = new ArrayList<>();
-        for (Booking booking : bookings) {
-            bookingDtos.add(mapToBookingDto(booking));
         }
         return bookingDtos;
     }
