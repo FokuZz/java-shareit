@@ -137,6 +137,42 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void testCreateBookingFailStartIsNull() {
+        long itemId = item.getId();
+        LocalDateTime end = booking.getEnd();
+        BookingDto bookingToSave = BookingDto.builder()
+                .itemId(itemId)
+                .start(null)
+                .end(end)
+                .build();
+        item.setAvailable(false);
+        long bookerId = booker.getId();
+        String error = "В теле Booking отсутствует старт/конец";
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> service.createBooking(bookerId, bookingToSave));
+        assertEquals(error, ex.getMessage());
+    }
+
+    @Test
+    void testCreateBookingFailItemIdIsNull() {
+        LocalDateTime start = booking.getStart();
+        LocalDateTime end = booking.getEnd();
+        BookingDto bookingToSave = BookingDto.builder()
+                .itemId(null)
+                .start(start)
+                .end(end)
+                .build();
+        item.setAvailable(false);
+        long bookerId = booker.getId();
+        String error = "Отсутствует itemId";
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> service.createBooking(bookerId, bookingToSave));
+        assertEquals(error, ex.getMessage());
+    }
+
+    @Test
     void testCreateBookingFailData() {
         long itemId = item.getId();
         LocalDateTime start = booking.getStart();
@@ -158,6 +194,7 @@ class BookingServiceImplTest {
                 () -> service.createBooking(bookerId, bookingToSave));
         assertEquals(error, ex.getMessage());
     }
+
 
     @Test
     void testCreateBookingStandard() {
@@ -252,6 +289,19 @@ class BookingServiceImplTest {
                 () -> service.confirmation(userId, false, bookingId)
         );
         assertEquals("Бронирование с id 1 уже отклонено", exception.getMessage());
+    }
+
+    @Test
+    void testConfirmationFailNotFound() {
+        long userId = owner.getId();
+        long bookingId = booking.getId();
+        Booking bookingTest = booking;
+        bookingTest.setStatus(Status.REJECTED);
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> service.confirmation(userId, false, bookingId)
+        );
+        assertEquals("Booking не был найден по id = 1", exception.getMessage());
     }
 
     @Test

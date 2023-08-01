@@ -156,6 +156,50 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void testCreateFailNullAvailable() {
+        long userId = owner.getId();
+        ItemDto itemDtoToSave = ItemDto.builder()
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(null)
+                .build();
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.create(userId, itemDtoToSave));
+        assertEquals("ERROR: Available is null", exception.getMessage());
+    }
+
+    @Test
+    void testCreateFailNullName() {
+        long userId = owner.getId();
+        ItemDto itemDtoToSave = ItemDto.builder()
+                .name(null)
+                .description(item.getDescription())
+                .available(item.isAvailable())
+                .build();
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.create(userId, itemDtoToSave));
+        assertEquals("ERROR: Name is null", exception.getMessage());
+
+    }
+
+    @Test
+    void testCreateFailNullDescription() {
+        long userId = owner.getId();
+        ItemDto itemDtoToSave = ItemDto.builder()
+                .name(item.getName())
+                .description(null)
+                .available(item.isAvailable())
+                .build();
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> service.create(userId, itemDtoToSave));
+        assertEquals("ERROR: Description is null", exception.getMessage());
+
+    }
+
+    @Test
     void testDeleteStandard() {
         long userId = owner.getId();
         long itemId = item.getId();

@@ -77,14 +77,4 @@ public class UserServiceImpl implements UserService {
             }
         });
     }
-
-    private void repeatCheckWithId(UserDto userDto, long userId) {
-        List<UserDto> userDtos = UserMapper.mapToUserDto(userDao.findAll());
-        userDtos.forEach(user -> {
-            if (user.getEmail().equals(userDto.getEmail())
-                    && user.getId() != userId) {
-                throw new AlreadyExist(String.format("User %s уже существует", userDto));
-            }
-        });
-    }
 }
