@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface CommentDao extends JpaRepository<Comment, Long> {
     List<Comment> findAllByItemIdOrderByCreatedDesc(Long itemId);
+
+    List<Comment> findAllByItemIdInOrderByCreatedDesc(List<Long> itemId);
+
 }

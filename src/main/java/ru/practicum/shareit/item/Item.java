@@ -34,8 +34,8 @@ public class Item {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
-    @JoinColumn(name = "requester_id")
-    ItemRequest requester;
+    @JoinColumn(name = "request_id")
+    ItemRequest request;
 
 
     @Override

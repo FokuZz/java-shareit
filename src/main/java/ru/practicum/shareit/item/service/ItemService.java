@@ -7,7 +7,7 @@ import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import java.util.List;
 
 public interface ItemService {
-    List<ItemWithCommentDto> getItemsByUserId(long userId);
+    List<ItemWithCommentDto> getItemsByUserId(long userId, int from, int size);
 
     ItemDto create(long userId, ItemDto itemDto);
 
@@ -19,7 +19,7 @@ public interface ItemService {
 
     List<ItemDto> getAll();
 
-    List<ItemDto> searchByText(String text, long userId);
+    List<ItemDto> searchByText(String text, int from, int size);
 
     CommentDto createComment(Long userId, Long itemId, CommentDto commentDto);
 }
