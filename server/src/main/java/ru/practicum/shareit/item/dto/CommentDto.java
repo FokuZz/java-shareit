@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import javax.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -13,7 +12,6 @@ import java.util.Objects;
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 @Builder
 public class CommentDto {
-    @Id
     long id;
     String text;
     String authorName;

@@ -50,21 +50,6 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void testCreateEmptyDescription() throws Exception {
-        ItemRequestItemsDto requestIn = ItemRequestItemsDto.builder()
-                .build();
-        String json = mapper.writeValueAsString(requestIn);
-        String error = "Поле description не может быть пустым";
-        mvc.perform(post(URL)
-                        .header("X-Sharer-User-Id", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
-    }
-
-    @Test
     void testCreateEmptyStandard() throws Exception {
         ItemRequestDto requestIn = ItemRequestDto.builder()
                 .build();
@@ -174,18 +159,6 @@ class ItemRequestControllerTest {
                         .param("size", "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error", containsString(error), String.class));
-    }
-
-    @Test
-    void testGetItemsFailFormValidation() throws Exception {
-        String error = "Нельзя вводить отрицательные число";
-        mvc.perform(get(URL + "/all")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("from", "-1")
-                        .param("size", "1"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", containsString(error), String.class));
     }
 

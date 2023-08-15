@@ -8,8 +8,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import ru.practicum.shareit.item.service.ItemService;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Positive;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,10 +20,8 @@ public class ItemController {
     @GetMapping
     public List<ItemWithCommentDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId,
                                            @RequestParam(defaultValue = "0", required = false)
-                                           @Min(value = 0, message = "Нельзя вводить отрицательные число")
                                            int from,
                                            @RequestParam(defaultValue = "10", required = false)
-                                           @Positive(message = "Нельзя вводить отрицательные число")
                                            int size) {
         return itemService.getItemsByUserId(userId, from, size);
     }
@@ -59,10 +55,8 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam String text,
                                      @RequestParam(defaultValue = "0", required = false)
-                                     @Min(value = 0, message = "Нельзя вводить отрицательные число")
                                      int from,
                                      @RequestParam(defaultValue = "10", required = false)
-                                     @Positive(message = "Нельзя вводить отрицательные число")
                                      int size) {
         if (text.isEmpty()) {
             return Collections.emptyList();
@@ -72,7 +66,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto createComment(
-            @RequestHeader("X-Sharer-User-Id") long userId,
+            @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId,
             @RequestBody CommentDto commentDto
     ) {

@@ -1,11 +1,8 @@
 package ru.practicum.shareit.exception;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ErrorHandlerTest {
 
@@ -74,46 +71,6 @@ public class ErrorHandlerTest {
         assertEquals("Already exists", response.getError());
     }
 
-    @Test
-    public void testSqlValidationWithNull() {
-        // Arrange
-        ErrorHandler errorHandler = new ErrorHandler();
-        AlreadyExist exception = new AlreadyExist("[null]");
 
-        // Act
-        ResponseEntity<ErrorResponse> responseEntity = errorHandler.sqlValidation(exception);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertTrue(responseEntity.getBody().getError().contains("[null]"));
-    }
-
-    @Test
-    public void testSqlValidationWithConflict() {
-        // Arrange
-        ErrorHandler errorHandler = new ErrorHandler();
-        RuntimeException exception = new RuntimeException("PUBLIC.UK_6DOTKOTT2KJSP8VW4D0M25FB7_INDEX_4");
-
-        // Act
-        ResponseEntity<ErrorResponse> responseEntity = errorHandler.sqlValidation(exception);
-
-        // Assert
-        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
-        assertTrue(responseEntity.getBody().getError().contains("PUBLIC.UK_6DOTKOTT2KJSP8VW4D0M25FB7_INDEX_4"));
-    }
-
-    @Test
-    public void testSqlValidationWithOtherError() {
-        // Arrange
-        ErrorHandler errorHandler = new ErrorHandler();
-        RuntimeException exception = new RuntimeException("Some other error");
-
-        // Act
-        ResponseEntity<ErrorResponse> responseEntity = errorHandler.sqlValidation(exception);
-
-        // Assert
-        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, responseEntity.getStatusCode());
-        assertTrue(responseEntity.getBody().getError().contains("необработанная ошибка валидации"));
-    }
 
 }

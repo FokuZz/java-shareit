@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestDao itemRequestDao;
@@ -34,7 +36,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemDao itemDao;
 
     @Override
-
+    @Transactional
     public ItemRequestDto create(Long userId, ItemRequestDto itemRequestDto) {
         log.info("Попытка создания ItemRequest с userId = {}, ItemRequest = {}", userId, itemRequestDto);
         if (itemRequestDto.getDescription().isBlank()) {

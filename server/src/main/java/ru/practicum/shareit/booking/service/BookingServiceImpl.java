@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.State;
 import ru.practicum.shareit.booking.Status;
@@ -26,12 +27,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
     private final BookingDao bookingDao;
     private final UserDao userDao;
     private final ItemDao itemDao;
 
     @Override
+    @Transactional
     public BookingDtoObjects createBooking(Long userId, BookingDto bookingDto) {
         log.info("Попытка создания booking = {} userId = {}", bookingDto, userId);
         if (bookingDto.getStart() == null || bookingDto.getEnd() == null) throw new ValidationException(
@@ -69,6 +72,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDtoObjects confirmation(Long userId, boolean approved, Long bookingId) {
         log.info("Попытка подтверждения с userId = {}, approved = {}, bookingId = {}", userId, approved, bookingId);
         Booking booking = bookingDao.getBookingWithAll(bookingId)

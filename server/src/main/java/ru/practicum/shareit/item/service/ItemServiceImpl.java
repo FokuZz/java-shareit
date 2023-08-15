@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dao.BookingDao;
@@ -24,6 +25,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
     private final ItemDao itemDao;
 
@@ -49,6 +51,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto create(long userId, ItemDto itemDto) {
         log.info("Попытка создания с id {} itemDto {}", userId, itemDto);
         boolean isNullAvailable = itemDto.getAvailable() == null;
@@ -66,12 +69,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public void deleteByUserIdAndItemId(long userId, long itemId) {
         log.info("Попытка удаления по userId {} и itemId {}", userId, itemId);
         itemDao.deleteByIdAndOwnerId(userId, itemId);
     }
 
     @Override
+    @Transactional
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
         log.info("Попытка обновления с userId {} itemId {} ItemDto {}", userId, itemId, itemDto);
         Item item = itemDao.findByIdAndOwnerId(itemId, userId)
@@ -125,7 +130,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-
+    @Transactional
     public CommentDto createComment(Long userId, Long itemId, CommentDto commentDto) {
         User owner = userDao.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User не найден по id = " + userId));

@@ -120,18 +120,6 @@ class UserControllerTest {
     }
 
     @Test
-    void testPatchFailInvalidEmailFormat() throws Exception {
-        String json = "{\"email\": \"invalid_email_format\"}";
-
-        mvc.perform(patch(URL + "/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString("Поле email не соответствует формату EMAIL")));
-    }
-
-    @Test
     void testAddStandard() throws Exception {
         userDto = userDtoBuilder.build();
         UserDto userDtoAdded = userDtoBuilder.id(1L).build();

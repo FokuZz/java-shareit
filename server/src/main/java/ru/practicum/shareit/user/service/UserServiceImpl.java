@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.AlreadyExist;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
@@ -16,6 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
@@ -29,9 +31,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto create(UserDto userDto) {
         log.info("Попытка создания пользователя по UserDto = {}", userDto);
-
-        repeatCheck(userDto);
-        return UserMapper.mapToUserDto(userDao.save(UserMapper.mapToUser(userDto)));
+        User user = UserMapper.mapToUser(userDto);
+        User userAdded;
+        try {
+            userAdded = userDao.save(user);
+        } catch (RuntimeException e) {
+            throw new AlreadyExist(e.getMessage());
+        }
+        return UserMapper.mapToUserDto(userAdded);
     }
 
     @Override
@@ -67,14 +74,5 @@ public class UserServiceImpl implements UserService {
 
         log.info("Обновление user = {}", user);
         return UserMapper.mapToUserDto(userDao.save(user));
-    }
-
-    private void repeatCheck(UserDto userDto) {
-        List<UserDto> userDtos = UserMapper.mapToUserDto(userDao.findAll());
-        userDtos.forEach(user -> {
-            if (user.getEmail().equals(userDto.getEmail())) {
-                throw new AlreadyExist(String.format("User %s уже существует", userDto));
-            }
-        });
     }
 }

@@ -1,22 +1,23 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
-    id    BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email VARCHAR(128),
-    name  VARCHAR(64)
+    name  VARCHAR(64),
+    CONSTRAINT UNIQUE_USER_EMAIL UNIQUE (email)
 );
 
-CREATE TABLE item_requests
+CREATE TABLE IF NOT EXISTS item_requests
 (
-    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     description  VARCHAR(255),
     requestor_id BIGINT,
     created      TIMESTAMP WITHOUT TIME ZONE,
     FOREIGN KEY (requestor_id) REFERENCES users (id)
 );
 
-CREATE TABLE items
+CREATE TABLE IF NOT EXISTS items
 (
-    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name        VARCHAR(255),
     description VARCHAR(255),
     available   boolean,
@@ -26,11 +27,11 @@ CREATE TABLE items
     FOREIGN KEY (request_id) REFERENCES item_requests (id)
 );
 
-CREATE TABLE bookings
+CREATE TABLE IF NOT EXISTS bookings
 (
-    id        BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `start`   TIMESTAMP WITHOUT TIME ZONE,
-    `end`     TIMESTAMP WITHOUT TIME ZONE,
+    id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "start"   TIMESTAMP WITHOUT TIME ZONE,
+    "end"     TIMESTAMP WITHOUT TIME ZONE,
     item_id   BIGINT,
     booker_id BIGINT,
     status    varchar(32),
@@ -38,9 +39,9 @@ CREATE TABLE bookings
     FOREIGN KEY (booker_id) REFERENCES users (id)
 );
 
-CREATE TABLE comments
+CREATE TABLE IF NOT EXISTS comments
 (
-    id        BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     text      VARCHAR(255),
     item_id   BIGINT,
     author_id BIGINT,

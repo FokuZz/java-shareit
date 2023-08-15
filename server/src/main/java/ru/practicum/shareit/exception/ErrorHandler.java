@@ -1,6 +1,5 @@
 package ru.practicum.shareit.exception;
 
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,17 +49,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleAlreadyExist(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler({JdbcSQLIntegrityConstraintViolationException.class})
-    public ResponseEntity<ErrorResponse> sqlValidation(final RuntimeException e) {
-        if (e.getMessage().contains("[null]")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
-        } else if (e.getMessage()
-                .contains("PUBLIC.UK_6DOTKOTT2KJSP8VW4D0M25FB7_INDEX_4")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(e.getMessage()));
-        }
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse("необработанная ошибка валидации  = " + e.getMessage()));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
