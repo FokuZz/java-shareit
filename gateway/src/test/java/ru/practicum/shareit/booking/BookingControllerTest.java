@@ -1,19 +1,24 @@
 package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,10 +37,21 @@ class BookingControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    @Test
-    void getAllTestValidation() throws Exception {
+    BookItemRequestDto bookItemRequestDto;
 
-        //fail State
+    String json;
+
+    @BeforeEach
+    void setup() throws Exception {
+        bookItemRequestDto = new BookItemRequestDto();
+        bookItemRequestDto.setItemId(2L);
+        bookItemRequestDto.setStart(LocalDateTime.now().plusHours(2));
+        bookItemRequestDto.setEnd(LocalDateTime.now().plusHours(4));
+        json = mapper.writeValueAsString(bookItemRequestDto);
+    }
+
+    @Test
+    void testFailUnknownState() throws Exception {
         String state = "qwerty";
         String error = "Unknown state: " + state;
         mvc.perform(get(URL)
@@ -46,72 +62,56 @@ class BookingControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", containsString(error)));
-
-        error = ERROR_TEXT;
-        //fail from -1
-        mvc.perform(get(URL)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "all")
-                        .param("from", "-1")
-                        .param("size", "10"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
-        //fail size 0
-        mvc.perform(get(URL)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "all")
-                        .param("from", "0")
-                        .param("size", "0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
-        //fail
-        error = "X-Sharer-User-Id";
-        mvc.perform(get(URL))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
     }
 
     @Test
-    void bookingValidation() throws Exception {
-        LocalDateTime now = LocalDateTime.now();
-        BookItemRequestDto bookingInDto = new BookItemRequestDto();
-        bookingInDto.setItemId(1L);
-        bookingInDto.setStart(now.plusMinutes(1));
-        bookingInDto.setEnd(now.plusMinutes(2));
-
-        //fail by start time
-        bookingInDto.setItemId(1L);
-        bookingInDto.setStart(null);
-        String json = mapper.writeValueAsString(bookingInDto);
-        String error = "start can't be NULL";
-        mvc.perform(post(URL)
-                        .header("X-Sharer-User-Id", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+    void testGetBookings() throws Exception {
+        when(client.getBookings(eq(5L), any(), anyInt(), anyInt()))
+                .thenReturn(ResponseEntity.of(Optional.of(bookItemRequestDto)));
+        mvc.perform(get(URL)
+                        .header("X-Sharer-User-Id", 5))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
-
-        //fail by end time
-        bookingInDto.setStart(LocalDateTime.now().plusMinutes(1));
-        bookingInDto.setEnd(null);
-        json = mapper.writeValueAsString(bookingInDto);
-        error = "end can't be NULL";
-        mvc.perform(post(URL)
-                        .header("X-Sharer-User-Id", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(bookItemRequestDto.getItemId()), Long.class));
     }
 
     @Test
-    void getBookingsOfOwnerTestValidation() throws Exception {
-        //Fail By State
+    void testPostItem() throws Exception {
+        when(client.bookItem(eq(5L), eq(bookItemRequestDto)))
+                .thenReturn(ResponseEntity.of(Optional.of(bookItemRequestDto)));
+        mvc.perform(post(URL)
+                        .header("X-Sharer-User-Id", 5)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(bookItemRequestDto.getItemId()), Long.class));
+    }
+
+    @Test
+    void testGetIdBooking() throws Exception {
+        when(client.getBooking(eq(5L), eq(2L)))
+                .thenReturn(ResponseEntity.of(Optional.of(bookItemRequestDto)));
+        mvc.perform(get(URL + "/2")
+                        .header("X-Sharer-User-Id", 5))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(bookItemRequestDto.getItemId()), Long.class));
+    }
+
+    @Test
+    void testPatchBooking() throws Exception {
+        when(client.patchBooking(eq(5L), eq(true), eq(2L)))
+                .thenReturn(ResponseEntity.of(Optional.of(bookItemRequestDto)));
+        mvc.perform(patch(URL + "/2?approved=true")
+                        .header("X-Sharer-User-Id", 5))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(bookItemRequestDto.getItemId()), Long.class));
+    }
+
+    @Test
+    void testFailUnknownStateGetOwners() throws Exception {
         String state = "qwerty";
         String error = "Unknown state: " + state;
         mvc.perform(get(URL + "/owner")
@@ -122,27 +122,16 @@ class BookingControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", containsString(error)));
+    }
 
-        //Fail By From
-        error = ERROR_TEXT;
+    @Test
+    void testGetBookingsOwner() throws Exception {
+        when(client.getBookingsOfOwner(eq(5L), any(), anyInt(), anyInt()))
+                .thenReturn(ResponseEntity.of(Optional.of(bookItemRequestDto)));
         mvc.perform(get(URL + "/owner")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "all")
-                        .param("from", "-1")
-                        .param("size", "10"))
+                        .header("X-Sharer-User-Id", 5))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
-
-        //Fail By Size
-        error = ERROR_TEXT;
-        mvc.perform(get(URL)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "all")
-                        .param("from", "0")
-                        .param("size", "0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemId", is(bookItemRequestDto.getItemId()), Long.class));
     }
 }

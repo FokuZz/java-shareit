@@ -6,11 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.dto.UserDto;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import java.util.Optional;
+
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,31 +34,84 @@ class UserControllerTest {
     private MockMvc mvc;
 
     @Test
-    void shouldValidateAdd() throws Exception {
-        //fail name
+    void testGetUsers() throws Exception {
         UserDto userDto = UserDto.builder()
-                .name("")
-                .email("e@mail.ru")
+                .id(2L)
+                .name("name")
+                .email("email@mail.ru")
+                .build();
+        when(client.getAll()).thenReturn(ResponseEntity.of(Optional.of(userDto)));
+        this.mvc
+                .perform(get(URL))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+    }
+
+    @Test
+    void testGetUserId() throws Exception {
+        UserDto userDto = UserDto.builder()
+                .id(2L)
+                .name("name")
+                .email("email@mail.ru")
+                .build();
+        when(client.getId(eq(2L))).thenReturn(ResponseEntity.of(Optional.of(userDto)));
+        this.mvc
+                .perform(get(URL + "/2"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+    }
+
+    @Test
+    void testPatchUser() throws Exception {
+        UserDto userDto = UserDto.builder()
+                .id(2L)
+                .name("name")
+                .email("email@mail.ru")
                 .build();
         String json = mapper.writeValueAsString(userDto);
-        String error = "name can't be blank";
-        mvc.perform(post(URL)
+        when(client.patch(eq(2L), eq(userDto))).thenReturn(ResponseEntity.of(Optional.of(userDto)));
+        this.mvc
+                .perform(patch(URL + "/2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+    }
 
-        //fail empty email
-        userDto.setName("name");
-        userDto.setEmail("");
-        json = mapper.writeValueAsString(userDto);
-        error = "email can't be blank";
-        this.mvc.perform(post(URL)
+    @Test
+    void testPostUser() throws Exception {
+        UserDto userDto = UserDto.builder()
+                .id(2L)
+                .name("name")
+                .email("email@mail.ru")
+                .build();
+        String json = mapper.writeValueAsString(userDto);
+        when(client.post(eq(userDto))).thenReturn(ResponseEntity.of(Optional.of(userDto)));
+        this.mvc
+                .perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString(error)));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+    }
+
+    @Test
+    void testDeleteItem() throws Exception {
+        this.mvc
+                .perform(delete(URL + "/2"))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 }

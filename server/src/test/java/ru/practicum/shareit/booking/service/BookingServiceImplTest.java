@@ -235,7 +235,7 @@ class BookingServiceImplTest {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> service.createBooking(bookerId,  bookingToSave)
+                () -> service.createBooking(bookerId, bookingToSave)
         );
     }
 
