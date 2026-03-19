@@ -1,58 +1,55 @@
-# 🤝ShareIt
-### Бэкенд простого приложения для шеринга* личных вещей. 
+# 🤝 ShareIt
 
-## Приложение состоит из трех микросервисов:
+### Backend for a peer-to-peer item sharing platform.
+
+## Architecture — 3 microservices:
+
 ### 🚪 Gateway
-Гейтвей, принимающий все запросы и осуществляющий базовую (не задействующую бизнес логику) валидацию на корректность
-запроса. Если запрос корректен, направляет его на сервер, а затем транслирует ответ, не меняя его.
+Accepts all incoming requests and handles basic validation (no business logic).
+Valid requests are forwarded to the server; responses are passed back as-is.
 
 ### 💻 Server
-Сервер принимает запросы от гейтвея, запускает бизнес логику, а также общается с базой данных и возвращает результат
-гейтвею.
+Receives requests from the Gateway, executes business logic, communicates with the database, and returns results.
 
-### 💾 DB
-База данных хранит все данные приложения.
+### 💾 Database
+Stores all application data.
 
-**Шеринг - это совместное, коллективное использование и потребление различных вещей и услуг.*
-___
+---
 
-### ⭐ Возможности приложения:
-* Пользователи могут оставлять запросы на вещь, которая им нужна.
-* Пользователи могут выставлять свои личные вещи для шеринга. Вещи можно выставлять как в ответ на запрос, так и без него.
-* Каждый пользователь может забронировать вещь на определенный срок. Не допускается:
-    * пересечения бронирований;
-    * бронирование "задним числом";
-    * окончание бронирования раньше его начала.
-* Каждый пользователь может посмотреть список своих вещей, а также последнее и следующее бронирование.
-* Каждый пользователь может посмотреть список своих бронирований, а также список бронирований его вещей со следующими статусами:
-    * ALL - все бронирования;
-    * CURRENT - текущий бронирования;
-    * PAST - прошедшие бронирования;
-    * FUTURE - предстоящие бронирования;
-    * WAITING - ожидающие ответа владельца вещи;
-    * REJECTED - отклоненные бронирования.
-* После окончания бронирования, пользователь может оставить комментарий о вещи.
-___
-### ⚙️ Технологический стек
-* Java 11
-* Spring Boot
-* Hibernate
-* Junit
-* Mockito
-* Lombok
-* PostgresSQL
-* Maven
-* Docker Compose
-___
-### 📃 Инструкция по запуску:
-Скачать проект.\
-Убедитесь, что порт 8080 свободен.
+## ⭐ Features
 
-Собрать проект:
+- Users can post requests for items they need
+- Users can list their own items for sharing — in response to a request or independently
+- Items can be booked for a specific time period, with the following rules enforced:
+  - No overlapping bookings
+  - No backdated bookings
+  - End date must be after start date
+- Users can view their listed items along with the last and next booking for each
+- Users can view their bookings filtered by status:
+  - `ALL` — all bookings
+  - `CURRENT` — active bookings
+  - `PAST` — completed bookings
+  - `FUTURE` — upcoming bookings
+  - `WAITING` — pending owner approval
+  - `REJECTED` — declined bookings
+- After a booking ends, users can leave a review on the item
+
+---
+
+## ⚙️ Stack
+Java 11 · Spring Boot · Hibernate · PostgreSQL · Docker Compose · Maven · JUnit · Mockito · Lombok
+
+---
+
+## 🚀 Running locally
+
+1. Clone the repository
+2. Make sure port `8080` is free
+3. Build:
 ```shell
 docker compose build
 ```
-Запустить проект:
+4. Run:
 ```shell
 docker compose up
 ```
